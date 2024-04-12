@@ -1,6 +1,6 @@
 {
   "name": "Bedrock Client",
-  "short_name": "BrClient",
+  "short_name": "BRClient",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": "/",
   "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "background_color": "transparent",
   "display": "standalone"
 }
