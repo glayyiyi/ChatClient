@@ -110,12 +110,19 @@ export class ClaudeApi implements LLMApi {
 
     for (var i = 0; i < messages.length; i++) {
       if (messages[i].role === "system") {
-        if (typeof messages[i].content === "string") {
-          has_system_prompt = true;
-          system_prompt = messages[i].content;
+        if (has_system_prompt) {
+          // only first system prompt is used
+          continue;
+        } else {
+          if (typeof messages[i].content === "string") {
+            has_system_prompt = true;
+            if (messages[i].content !== "") {
+              system_prompt = messages[i].content;
+            } else {
+              system_prompt = "' '";
+            }
+          }
         }
-
-        prev_role = messages[i].role;
       } else if (messages[i].role === "user") {
         // check the value type of the content
 
@@ -130,18 +137,21 @@ export class ClaudeApi implements LLMApi {
           // put the contents in the last message to the new contents
 
           for (var k = 0; k < last_message.content.length; k++) {
-            new_contents.push(last_message.content[k]);
+            if (last_message.content[k] !== "") {
+              new_contents.push(last_message.content[k]);
+            } else {
+              new_contents.push("' '");
+            }
           }
         }
 
         if (typeof messages[i].content === "string") {
           // the message content is not an array, it is a text message
 
-          // console.log("text message", messages[i].content);
+          const content_string =
+            messages[i].content == "" ? "' '" : messages[i].content;
 
-          const text_playload = { type: "text", text: messages[i].content };
-
-          // console.log("text_playload", text_playload);
+          const text_playload = { type: "text", text: content_string };
 
           new_contents.push(text_playload);
         } else {
@@ -176,7 +186,9 @@ export class ClaudeApi implements LLMApi {
                 new_contents.push(image_playload);
               }
             } else {
-              new_contents.push(messages[i].content[j]);
+              const content_string =
+                messages[i].content[j] == "" ? "' '" : messages[i].content[j];
+              new_contents.push(content_string);
             }
           }
         }
@@ -198,19 +210,24 @@ export class ClaudeApi implements LLMApi {
           // put the contents in the last message to the new contents
 
           for (var k = 0; k < last_message.content.length; k++) {
+            const content_string =
+              last_message.content[k] == "" ? "' '" : last_message.content[k];
             new_contents.push(last_message.content[k]);
           }
         }
 
         if (typeof messages[i].content === "string") {
           // the message content is not an array, it is a text message
-
-          const text_playload = { type: "text", text: messages[i].content };
+          const message_contest_string =
+            messages[i].content == "" ? "' '" : messages[i].content;
+          const text_playload = { type: "text", text: message_contest_string };
 
           new_contents.push(text_playload);
         } else {
           for (var j = 0; j < messages[i].content.length; j++) {
-            new_contents.push(messages[i].content[j]);
+            const message_content =
+              messages[i].content[j] == "" ? "' '" : messages[i].content[j];
+            new_contents.push(message_content);
           }
         }
 
@@ -218,20 +235,12 @@ export class ClaudeApi implements LLMApi {
 
         prev_role = messages[i].role;
       } else {
-        new_messages.push(messages[i]);
+        const message_content = messages[i] == "" ? "' '" : messages[i];
+        new_messages.push(message_content);
 
         prev_role = messages[i].role;
       }
     }
-    // }
-
-    // else {
-    //   var new_messages = messages;
-    // }
-
-    // var requestPayload
-
-    // if (visionModel) {
 
     const requestPayload = {
       ...(has_system_prompt ? { system: system_prompt } : {}),

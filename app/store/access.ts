@@ -21,7 +21,7 @@ const DEFAULT_ACCESS_STATE = {
   useCustomConfig: true,
 
   provider: ServiceProvider.AWS,
-  useBrProxy: "True",
+  useBrProxy: "False",
 
   // AWS
   awsAccessKeyId: "",
