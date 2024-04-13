@@ -288,10 +288,10 @@ const en: LocaleType = {
         Title: "Custom Endpoint",
         SubTitle: "Use custom Azure or OpenAI service",
       },
-      BrProxy: {
-        Title: "Enable BrProxy",
+      BRProxy: {
+        Title: "Enable BRProxy",
         SubTitle:
-          "Choose False if you wanna use AKSK, True if you wanna use BrProxy",
+          "Choose False if you wanna use AKSK, True if you wanna use BRProxy",
       },
       Provider: {
         Title: "Model Provider",

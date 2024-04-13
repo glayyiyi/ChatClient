@@ -9,7 +9,7 @@ import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
 import { ClaudeApi } from "./platforms/aws";
-import { BrProxyApi } from "./platforms/brproxy";
+import { BRProxyApi } from "./platforms/brproxy";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -102,8 +102,8 @@ export class ClientApi {
     console.log("provider is:" + provider);
     if (provider === ModelProvider.Claude) {
       const accessStore = useAccessStore.getState();
-      if (accessStore.useBrProxy === "True") {
-        this.llm = new BrProxyApi();
+      if (accessStore.useBRProxy === "True") {
+        this.llm = new BRProxyApi();
         return;
       }
       this.llm = new ClaudeApi();

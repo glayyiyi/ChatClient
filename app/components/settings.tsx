@@ -58,8 +58,8 @@ import {
   RELEASE_URL,
   STORAGE_KEY,
   ServiceProvider,
-  UseBrProxy,
-  BrProxy,
+  UseBRProxy,
+  BRProxy,
   SlotID,
   UPDATE_URL,
 } from "../constant";
@@ -981,27 +981,27 @@ export function Settings() {
                   {accessStore.provider === "AWS" ? (
                     <>
                       <ListItem
-                        title={Locale.Settings.Access.BrProxy.Title}
-                        subTitle={Locale.Settings.Access.BrProxy.SubTitle}
+                        title={Locale.Settings.Access.BRProxy.Title}
+                        subTitle={Locale.Settings.Access.BRProxy.SubTitle}
                       >
                         <Select
-                          value={accessStore.useBrProxy}
+                          value={accessStore.useBRProxy}
                           onChange={(e) => {
                             accessStore.update(
                               (access) =>
-                                (access.useBrProxy = e.target
-                                  .value as UseBrProxy),
+                                (access.useBRProxy = e.target
+                                  .value as UseBRProxy),
                             );
                           }}
                         >
-                          {Object.entries(UseBrProxy).map(([k, v]) => (
+                          {Object.entries(UseBRProxy).map(([k, v]) => (
                             <option value={v} key={k}>
                               {k}
                             </option>
                           ))}
                         </Select>
                       </ListItem>
-                      {accessStore.useBrProxy === "False" ? (
+                      {accessStore.useBRProxy === "False" ? (
                         <>
                           <ListItem
                             title={Locale.Settings.Access.AWS.Region.Title}
@@ -1066,7 +1066,7 @@ export function Settings() {
                             />
                           </ListItem>
                         </>
-                      ) : accessStore.useBrProxy === "True" ? (
+                      ) : accessStore.useBRProxy === "True" ? (
                         <>
                           <ListItem
                             title={Locale.Settings.Access.AWS.Endpoint.Title}
@@ -1076,12 +1076,12 @@ export function Settings() {
                           >
                             <input
                               type="text"
-                              value={accessStore.brproxyUrl}
-                              placeholder={BrProxy.ExampleEndpoint}
+                              value={accessStore.BRProxyUrl}
+                              placeholder={BRProxy.ExampleEndpoint}
                               onChange={(e) =>
                                 accessStore.update(
                                   (access) =>
-                                    (access.brproxyUrl = e.currentTarget.value),
+                                    (access.BRProxyUrl = e.currentTarget.value),
                                 )
                               }
                             ></input>

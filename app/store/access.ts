@@ -21,13 +21,13 @@ const DEFAULT_ACCESS_STATE = {
   useCustomConfig: true,
 
   provider: ServiceProvider.AWS,
-  useBrProxy: "False",
+  useBRProxy: "False",
 
   // AWS
   awsAccessKeyId: "",
   awsSecretAccessKey: "",
   awsRegion: "",
-  brproxyUrl: "",
+  BRProxyUrl: "",
 
   // openai
   openaiUrl: DEFAULT_OPENAI_URL,

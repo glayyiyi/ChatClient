@@ -40,16 +40,16 @@ export interface OpenAIListModelResponse {
   }>;
 }
 
-export class BrProxyApi implements LLMApi {
+export class BRProxyApi implements LLMApi {
   private disableListModels = true;
 
   path(path: string): string {
     const accessStore = useAccessStore.getState();
 
-    if (!accessStore.brproxyUrl) {
+    if (!accessStore.BRProxyUrl) {
       throw Error("Please set your access url.");
     }
-    let baseUrl = accessStore.brproxyUrl;
+    let baseUrl = accessStore.BRProxyUrl;
     if (baseUrl.endsWith("/")) {
       baseUrl = baseUrl.slice(0, baseUrl.length - 1);
     }
