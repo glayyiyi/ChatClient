@@ -20,15 +20,15 @@ Mac用户解压下载的zip文件后直接打开 BRClient.app 使用
 Download links:
 
 Windows:
-https://github.com/DamonDeng/BRClient/releases/download/beta1/brclient_windows.zip
+https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_windows.zip
 
 
 Mac M 系列:
-https://github.com/DamonDeng/BRClient/releases/download/beta1/brclient_m_series.zip
+https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_m_series.zip
 
 
 Mac x86 系列:
-https://github.com/DamonDeng/BRClient/releases/download/beta1/brclient_x86_mac.zip
+https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_x86_mac.zip
 
 
 
