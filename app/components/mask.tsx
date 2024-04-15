@@ -13,6 +13,9 @@ import EyeIcon from "../icons/eye.svg";
 import CopyIcon from "../icons/copy.svg";
 import DragIcon from "../icons/drag.svg";
 
+import https from "https";
+import url from "url";
+
 import { DEFAULT_MASK_AVATAR, Mask, useMaskStore } from "../store/mask";
 import {
   ChatMessage,
@@ -456,6 +459,74 @@ export function MaskPage() {
     });
   };
 
+  function curl(
+    urlString: string,
+    method: string,
+    headers: { [key: string]: string },
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const parsedUrl = url.parse(urlString);
+
+      const options = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port ? parseInt(parsedUrl.port) : 443,
+        path: parsedUrl.path,
+        method: method,
+        headers: headers,
+      };
+
+      const req = https.request(options, (res) => {
+        let data = "";
+
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        res.on("end", () => {
+          resolve(data);
+        });
+      });
+
+      req.on("error", (err) => {
+        reject(err);
+      });
+
+      req.end();
+    });
+  }
+
+  const importFromLink = () => {
+    const url = "https://i8mf90he81.execute-api.us-east-1.amazonaws.com";
+    const method = "GET";
+    const headers = {};
+
+    curl(url, method, headers)
+      .then((data) => {
+        console.log(data);
+        try {
+          const importMasks = JSON.parse(data);
+          if (Array.isArray(importMasks)) {
+            for (const mask of importMasks) {
+              if (mask.name) {
+                maskStore.create(mask);
+              }
+            }
+            return;
+          }
+          //if the content is a single mask.
+          if (importMasks.name) {
+            maskStore.create(importMasks);
+          }
+          console.log("import successful");
+        } catch (err) {
+          console.error(err);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
   return (
     <ErrorBoundary>
       <div className={styles["mask-page"]}>
@@ -484,6 +555,14 @@ export function MaskPage() {
                 text={Locale.UI.Import}
                 bordered
                 onClick={() => importFromFile()}
+              />
+            </div>
+            <div className="window-action-button">
+              <IconButton
+                icon={<UploadIcon />}
+                text={Locale.UI.ImportFromHub}
+                bordered
+                onClick={() => importFromLink()}
               />
             </div>
             <div className="window-action-button">
