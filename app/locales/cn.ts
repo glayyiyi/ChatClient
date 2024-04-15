@@ -284,9 +284,9 @@ const cn = {
         Title: "自定义接口",
         SubTitle: "是否使用自定义 Azure 或 OpenAI 服务",
       },
-      BrProxy: {
-        Title: "Enable BrProxy",
-        SubTitle: "如果使用AKSK请选择False，如果使用BrProxy请选择True",
+      BRProxy: {
+        Title: "Enable BRProxy",
+        SubTitle: "如果使用AKSK请选择False，如果使用BRProxy请选择True",
       },
       Provider: {
         Title: "模型服务商",
