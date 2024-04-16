@@ -9,7 +9,7 @@
   },
   "package": {
     "productName": "BRClient",
-    "version": "1.11.2"
+    "version": "1.11.8"
   },
   "tauri": {
     "allowlist": {
