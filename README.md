@@ -1,5 +1,5 @@
 <div align="center">
-<img src="./public/logo.png" alt="icon" width="64" height="64" />
+<img src="./public/logo.png" alt="icon" width="96" height="96" />
 
 
 <h1 align="center">BRClient</h1>
