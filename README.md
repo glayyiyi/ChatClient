@@ -1,17 +1,4 @@
-<div align="center">
-<img src="./public/logo.png" alt="icon" width="96" height="96" />
 
-
-<h1 align="center">BRClient</h1>
-
-English / [简体中文](./README_CN.md)
-
-It is a Bedrock client forked from https://github.com/Yidadaa/ChatGPT-Next-Web/
-
-And it was simplified to support AWS Bedrock only.
-
-
-</div>
 
 ## Installation:
 
