@@ -8,18 +8,6 @@ For Windows user, unzip the zip file and then double click the msi file to insta
 
 For Mac user, unzip the zip file and then open the BRClient.app directly.
 
-Download links:
-
-Windows:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_windows.zip
-
-
-Mac M Series:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_m_series.zip
-
-
-Mac x86 Series:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_x86_mac.zip
 
 
 
