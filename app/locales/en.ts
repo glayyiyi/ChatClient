@@ -5,18 +5,19 @@ import { LocaleType } from "./index";
 // if you are adding a new translation, please use PartialLocaleType instead of LocaleType
 
 const isApp = !!getClientConfig()?.isApp;
+console.log(isApp)
 const en: LocaleType = {
   WIP: "Coming Soon...",
   Error: {
     Unauthorized: isApp
       ? "Invalid API Key, please check it in [Settings](/#/settings) page."
-      : "Unauthorized access, please enter access code in [auth](/#/auth) page, or enter your OpenAI API Key.",
+      : "Unauthorized access, please enter confgure your AWS credentials in [auth](/#/auth) page",
   },
   Auth: {
-    Title: "Need Access Code",
-    Tips: "Please enter access code below",
-    SubTips: "Or enter your OpenAI or Google API Key",
-    Input: "access code",
+    Title: "Need AWS credentials",
+    Tips: "Please enter AWS region, acess key and secret key below",
+    SubTips: "Or enter your BRConnector API Key",
+    Input: "access key",
     Confirm: "Confirm",
     Later: "Later",
   },
@@ -66,6 +67,7 @@ const en: LocaleType = {
       Clear: "Clear Context",
       Settings: "Settings",
       UploadImage: "Upload Images",
+      ImportSession: "Import Session(JSON format)",
     },
     Rename: "Rename Chat",
     Typing: "Typing…",
@@ -285,13 +287,13 @@ const en: LocaleType = {
         Placeholder: "Enter Code",
       },
       CustomEndpoint: {
-        Title: "Custom Endpoint",
-        SubTitle: "Use custom Azure or OpenAI service",
+        Title: "AWS Setting",
+        SubTitle: "Configure the parameters for Amazon Web Services.",
       },
       BRProxy: {
-        Title: "Enable BRProxy",
+        Title: "Enable BRConnector",
         SubTitle:
-          "Choose False if you wanna use AKSK, True if you wanna use BRProxy",
+          "If you have deployed BRConnector, please check this option.",
       },
       Provider: {
         Title: "Model Provider",
@@ -301,7 +303,7 @@ const en: LocaleType = {
         Region: {
           Title: "AWS Region",
           SubTitle: "Setting the service Region",
-          Placeholder: "do input the region, such as us-west-2",
+          Placeholder: "us-west-2",
         },
 
         AccessKey: {
@@ -315,16 +317,15 @@ const en: LocaleType = {
           SubTitle: "Config Secret Key",
           Placeholder: "input secret key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
         },
-
         Endpoint: {
-          Title: "AWS Endpoint",
-          SubTitle: "AWS Endpoint",
+          Title: "BRConnector Endpoint",
+          SubTitle: "Please set your BRConnector endpoint, it must start with https://",
+          Placeholder: "input BRConnector Endpoint",
         },
-
         ApiKey: {
           Title: "API Key",
-          SubTitle: "API Key",
-          Placeholder: "Enter API key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
+          SubTitle: "The API Key needs to be requested from BRConnector",
+          Placeholder: "input API Key",
         },
       },
       OpenAI: {
@@ -486,6 +487,7 @@ const en: LocaleType = {
     More: "Find More",
     NotShow: "Never Show Again",
     ConfirmNoShow: "Confirm to disable？You can enable it in settings later.",
+    Import: "Import Session",
   },
 
   UI: {

@@ -57,15 +57,16 @@ export interface LLMModel {
   name: string;
   available: boolean;
   modelId?: string;
+  multiple?: boolean;
   anthropic_version?: string;
   displayName: string;
   provider: LLMModelProvider;
 }
 
 export interface LLMModelProvider {
-  id: string;
-  providerName: string;
-  providerType: string;
+  id?: string;
+  providerName?: string;
+  providerType?: string;
 }
 
 export abstract class LLMApi {
@@ -99,9 +100,13 @@ export class ClientApi {
   public llm: LLMApi;
 
   constructor(provider: ModelProvider = ModelProvider.Claude) {
+    const accessStore = useAccessStore.getState();
     console.log("provider is:" + provider);
+    if (provider == ModelProvider.AWS && accessStore.useBRProxy === "True") {
+      this.llm = new BRProxyApi();
+      return;
+    }
     if (provider === ModelProvider.Claude) {
-      const accessStore = useAccessStore.getState();
       if (accessStore.useBRProxy === "True") {
         this.llm = new BRProxyApi();
         return;
@@ -109,18 +114,19 @@ export class ClientApi {
       this.llm = new ClaudeApi();
       return;
     }
-    if (provider === ModelProvider.GeminiPro) {
-      this.llm = new GeminiProApi();
-      return;
-    }
-    this.llm = new ChatGPTApi();
+    // if (provider === ModelProvider.GeminiPro) {
+    //   this.llm = new GeminiProApi();
+    //   return;
+    // }
+    // this.llm = new ChatGPTApi();
+    this.llm = new ClaudeApi();
   }
 
-  config() {}
+  config() { }
 
-  prompts() {}
+  prompts() { }
 
-  masks() {}
+  masks() { }
 
   async share(messages: ChatMessage[], avatarUrl: string | null = null) {
     const msgs = messages
@@ -132,11 +138,10 @@ export class ClientApi {
         {
           from: "human",
           value:
-            "Share from [NextChat]: https://github.com/Yidadaa/ChatGPT-Next-Web",
+            "Share from [BRClient]: A chatbot client forked from https://github.com/Yidadaa/ChatGPT-Next-Web",
         },
       ]);
-    // 敬告二开开发者们，为了开源大模型的发展，请不要修改上述消息，此消息用于后续数据清洗使用
-    // Please do not modify this message
+
 
     console.log("[Share]", messages, msgs);
     const clientConfig = getClientConfig();
@@ -177,8 +182,8 @@ export function getHeaders() {
   const apiKey = isGoogle
     ? accessStore.googleApiKey
     : isAzure
-    ? accessStore.azureApiKey
-    : accessStore.openaiApiKey;
+      ? accessStore.azureApiKey
+      : accessStore.openaiApiKey;
   const clientConfig = getClientConfig();
   const makeBearer = (s: string) => `${isAzure ? "" : "Bearer "}${s.trim()}`;
   const validString = (x: string) => x && x.length > 0;

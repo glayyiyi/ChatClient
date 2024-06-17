@@ -1,3 +1,23 @@
+<div align="center">
+<img src="./public/logo.png" alt="icon" width="96" height="96" />
+
+
+<h1 align="center">BRClient</h1>
+
+English / [简体中文](./README_CN.md)
+
+It is a Bedrock client forked from https://github.com/Yidadaa/ChatGPT-Next-Web/
+
+And it was simplified to support AWS Bedrock only.
+
+</div>
+
+## Important Notice:
+```
+This project is a sample project intended solely to showcase the process of building a chatting client that connects to LLM models like Claude3 on Bedrock. 
+
+It is not a production-ready client, and it should not be used in a production environment without further development and testing.
+```
 
 
 ## Installation:
@@ -8,6 +28,20 @@ For Windows user, unzip the zip file and then double click the msi file to insta
 
 For Mac user, unzip the zip file and then open the BRClient.app directly.
 
+The Mac App files were signed by a community contributor for your convenience. The signer reserves all rights to the signature, and the signed files are not covered by the open-source licenses of this project.
+
+Download links:
+
+Windows:
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_windows.zip
+
+
+Mac M Series:
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_m_series.zip
+
+
+Mac x86 Series:
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_x86_mac.zip
 
 
 
@@ -57,9 +91,6 @@ To get started with BRClient, you must create an IAM user and generate Access Ke
 
 For more details about Amazon Bedrock identity-based policy, please visit [Link](https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_id-based-policy-examples.html)
 
-## Donation
-If you like this project, buy original author yidadaa a Coffee
-[Buy Original Author a Coffee](https://www.buymeacoffee.com/yidadaa)
 
 ## LICENSE
 

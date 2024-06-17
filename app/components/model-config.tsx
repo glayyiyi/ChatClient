@@ -1,4 +1,7 @@
-import { ModalConfigValidator, ModelConfig, useAppConfig } from "../store";
+import {
+  ModalConfigValidator, ModelConfig, useAppConfig, useAccessStore,
+} from "../store";
+import { getServerSideConfig } from "../config/server";
 import { useEffect } from "react";
 import Locale from "../locales";
 import { InputRange } from "./input-range";
@@ -14,6 +17,9 @@ export function ModelConfigList(props: {
   updateConfig: (updater: (config: ModelConfig) => void) => void;
 }) {
   const appConfig = useAppConfig();
+  const accessStore = useAccessStore();
+
+  const { provider, useBRProxy, BRProxyUrl, openaiApiKey } = accessStore;
 
   useEffect(() => {
     const storedModels: LLMModel[] = appConfig.models;
@@ -37,9 +43,9 @@ export function ModelConfigList(props: {
             onChange={(e) => {
               props.updateConfig(
                 (config) =>
-                  (config.model = ModalConfigValidator.model(
-                    e.currentTarget.value,
-                  )),
+                (config.model = ModalConfigValidator.model(
+                  e.currentTarget.value,
+                )),
               );
             }}
           >
@@ -51,18 +57,33 @@ export function ModelConfigList(props: {
                 </option>
               ))}
           </Select>
+
+
           <IconButton
             onClick={async () => {
               try {
-                //TODO: change url!!!
+                const http_headers: any = {
+                };
+                let model_url = "https://eiai.fun/bedrock-models.json";
+                if (provider === "AWS" && useBRProxy === "True") {
+                  http_headers["Authorization"] = `Bearer ${openaiApiKey}`;
+                  model_url = BRProxyUrl + "/user/model/list-for-brclient?f=";
+                }
+
                 const response = await fetch(
-                  "https://eiai.fun/bedrock-models.json?f=" +
-                    new Date().getTime().toString(),
+                  model_url + "?f=" + new Date().getTime().toString(),
+                  {
+                    method: 'GET',
+                    headers: http_headers,
+                  },
                 );
-                const bedrockModels = await response.json();
+                let remote_models = await response.json();
+                if (provider === "AWS" && useBRProxy === "True") {
+                  remote_models = remote_models.data;
+                }
                 appConfig.update(
                   (config) =>
-                    (config.models = bedrockModels as any as LLMModel[]),
+                    (config.models = remote_models as any as LLMModel[]),
                 );
               } catch (e) {
                 console.error(e);
@@ -70,6 +91,7 @@ export function ModelConfigList(props: {
             }}
             icon={<ResetIcon />}
           />
+
         </div>
       </ListItem>
       <ListItem
@@ -84,9 +106,9 @@ export function ModelConfigList(props: {
           onChange={(e) => {
             props.updateConfig(
               (config) =>
-                (config.temperature = ModalConfigValidator.temperature(
-                  e.currentTarget.valueAsNumber,
-                )),
+              (config.temperature = ModalConfigValidator.temperature(
+                e.currentTarget.valueAsNumber,
+              )),
             );
           }}
         ></InputRange>
@@ -103,9 +125,9 @@ export function ModelConfigList(props: {
           onChange={(e) => {
             props.updateConfig(
               (config) =>
-                (config.top_p = ModalConfigValidator.top_p(
-                  e.currentTarget.valueAsNumber,
-                )),
+              (config.top_p = ModalConfigValidator.top_p(
+                e.currentTarget.valueAsNumber,
+              )),
             );
           }}
         ></InputRange>
@@ -122,9 +144,9 @@ export function ModelConfigList(props: {
           onChange={(e) =>
             props.updateConfig(
               (config) =>
-                (config.max_tokens = ModalConfigValidator.max_tokens(
-                  e.currentTarget.valueAsNumber,
-                )),
+              (config.max_tokens = ModalConfigValidator.max_tokens(
+                e.currentTarget.valueAsNumber,
+              )),
             )
           }
         ></input>
@@ -144,10 +166,10 @@ export function ModelConfigList(props: {
               onChange={(e) => {
                 props.updateConfig(
                   (config) =>
-                    (config.presence_penalty =
-                      ModalConfigValidator.presence_penalty(
-                        e.currentTarget.valueAsNumber,
-                      )),
+                  (config.presence_penalty =
+                    ModalConfigValidator.presence_penalty(
+                      e.currentTarget.valueAsNumber,
+                    )),
                 );
               }}
             ></InputRange>
@@ -165,10 +187,10 @@ export function ModelConfigList(props: {
               onChange={(e) => {
                 props.updateConfig(
                   (config) =>
-                    (config.frequency_penalty =
-                      ModalConfigValidator.frequency_penalty(
-                        e.currentTarget.valueAsNumber,
-                      )),
+                  (config.frequency_penalty =
+                    ModalConfigValidator.frequency_penalty(
+                      e.currentTarget.valueAsNumber,
+                    )),
                 );
               }}
             ></InputRange>
@@ -184,8 +206,8 @@ export function ModelConfigList(props: {
               onChange={(e) =>
                 props.updateConfig(
                   (config) =>
-                    (config.enableInjectSystemPrompts =
-                      e.currentTarget.checked),
+                  (config.enableInjectSystemPrompts =
+                    e.currentTarget.checked),
                 )
               }
             ></input>
@@ -237,8 +259,8 @@ export function ModelConfigList(props: {
           onChange={(e) =>
             props.updateConfig(
               (config) =>
-                (config.compressMessageLengthThreshold =
-                  e.currentTarget.valueAsNumber),
+              (config.compressMessageLengthThreshold =
+                e.currentTarget.valueAsNumber),
             )
           }
         ></input>

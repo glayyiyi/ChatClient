@@ -10,6 +10,10 @@ import React, {
   RefObject,
 } from "react";
 
+import {
+  readFromFile,
+} from "../utils";
+
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
 import RenameIcon from "../icons/rename.svg";
@@ -20,6 +24,7 @@ import LoadingIcon from "../icons/three-dots.svg";
 import LoadingButtonIcon from "../icons/loading.svg";
 import PromptIcon from "../icons/prompt.svg";
 import MaskIcon from "../icons/mask.svg";
+import ImportIcon from "../icons/import.svg";
 import MaxIcon from "../icons/max.svg";
 import MinIcon from "../icons/min.svg";
 import ResetIcon from "../icons/reload.svg";
@@ -583,7 +588,7 @@ export function ChatActions(props: {
   const [showUploadImage, setShowUploadImage] = useState(false);
 
   useEffect(() => {
-    const show = isVisionModel(currentModel);
+    const show = isVisionModel(currentModel, allModels);
     setShowUploadImage(show);
     if (!show) {
       props.setAttachImages([]);
@@ -661,6 +666,20 @@ export function ChatActions(props: {
         }}
         text={Locale.Chat.InputActions.Masks}
         icon={<MaskIcon />}
+      />
+
+      <ChatAction
+        onClick={() => {
+          readFromFile().then((content) => {
+            try {
+              const session = JSON.parse(content);
+              chatStore.importSession(session);
+              navigate(Path.Chat);
+            } catch { }
+          });
+        }}
+        text={Locale.Chat.InputActions.ImportSession}
+        icon={<ImportIcon />}
       />
 
       <ChatAction
@@ -801,9 +820,9 @@ function _Chat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrolledToBottom = scrollRef?.current
     ? Math.abs(
-        scrollRef.current.scrollHeight -
-          (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
-      ) <= 1
+      scrollRef.current.scrollHeight -
+      (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
+    ) <= 1
     : false;
   const { setAutoScroll, scrollDomToBottom } = useScrollToBottom(
     scrollRef,
@@ -1090,27 +1109,27 @@ function _Chat() {
       .concat(
         isLoading
           ? [
-              {
-                ...createMessage({
-                  role: "assistant",
-                  content: "……",
-                }),
-                preview: true,
-              },
-            ]
+            {
+              ...createMessage({
+                role: "assistant",
+                content: "……",
+              }),
+              preview: true,
+            },
+          ]
           : [],
       )
       .concat(
         userInput.length > 0 && config.sendPreviewBubble
           ? [
-              {
-                ...createMessage({
-                  role: "user",
-                  content: userInput,
-                }),
-                preview: true,
-              },
-            ]
+            {
+              ...createMessage({
+                role: "user",
+                content: userInput,
+              }),
+              preview: true,
+            },
+          ]
           : [],
       );
   }, [
@@ -1205,7 +1224,7 @@ function _Chat() {
         if (payload.key || payload.url) {
           showConfirm(
             Locale.URLCommand.Settings +
-              `\n${JSON.stringify(payload, null, 4)}`,
+            `\n${JSON.stringify(payload, null, 4)}`,
           ).then((res) => {
             if (!res) return;
             if (payload.key) {
@@ -1244,10 +1263,13 @@ function _Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+  const allModels = useAllModels();
+
   const handlePaste = useCallback(
     async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const currentModel = chatStore.currentSession().mask.modelConfig.model;
-      if (!isVisionModel(currentModel)) {
+      if (!isVisionModel(currentModel, allModels)) {
         return;
       }
       const items = (event.clipboardData || window.clipboardData).items;
@@ -1645,11 +1667,10 @@ function _Chat() {
           }}
         />
         <label
-          className={`${styles["chat-input-panel-inner"]} ${
-            attachImages.length != 0
-              ? styles["chat-input-panel-inner-attach"]
-              : ""
-          }`}
+          className={`${styles["chat-input-panel-inner"]} ${attachImages.length != 0
+            ? styles["chat-input-panel-inner-attach"]
+            : ""
+            }`}
           htmlFor="chat-input"
         >
           <textarea

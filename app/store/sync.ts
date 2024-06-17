@@ -76,8 +76,12 @@ export const useSyncStore = createPersistStore(
         const remoteState = JSON.parse(rawContent) as AppState;
         const localState = getLocalAppState();
         mergeAppState(localState, remoteState);
+        localState[StoreKey.Chat].lastAction = "importSessions"
         setLocalAppState(localState);
-        location.reload();
+        setTimeout(() => {
+          // 异步执行，否则APP里还未更新完就会刷新，导致导入不成功, browser不存在此问题
+          location.reload();
+        }, 3000);
       } catch (e) {
         console.error("[Import]", e);
         showToast(Locale.Settings.Sync.ImportFailed);

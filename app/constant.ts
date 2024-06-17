@@ -103,7 +103,7 @@ export const Google = {
 };
 
 export const BRProxy = {
-  ExampleEndpoint: "http://localhost:8866",
+  ExampleEndpoint: "https://Your-BRConnector-Url",
   ChatPath: "v1/chat/completions",
 };
 

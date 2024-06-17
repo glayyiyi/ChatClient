@@ -1,5 +1,15 @@
 import { trimTopic, getMessageTextContent } from "../utils";
 
+import { get as idb_get, 
+          set as idb_set,
+          setMany as idb_setMany,
+          del as idb_del, 
+          values as idb_values, 
+          clear as idb_clear,
+          createStore as idb_createStore, 
+          set} from 'idb-keyval' // can use anything: IndexedDB, Ionic Storage, etc.
+import { createJSONStorage, StateStorage } from 'zustand/middleware'
+
 import Locale, { getLang } from "../locales";
 import { showToast } from "../components/ui-lib";
 import { ModelConfig, ModelType, useAppConfig } from "./config";
@@ -143,8 +153,150 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
 
 const DEFAULT_CHAT_STATE = {
   sessions: [createEmptySession()],
+  lastAction: '',
   currentSessionIndex: 0,
 };
+const CURRENT_STORAGE_VERSION = 4.0
+
+import { indexedDB as fakeIndexedDB } from "fake-indexeddb";
+
+const createIDBStorage = () => {
+  console.log("Creating IDBStorage")
+  if (typeof indexedDB === "undefined") {
+    global.indexedDB = fakeIndexedDB;
+  }  
+  const idbChatSessionStore = idb_createStore('brclient-chat-store', 'sessions-store');
+  const idbChatStorage: StateStorage = {
+    getItem: async (name: string): Promise<any> => {
+      console.log("get for key:", name)
+      const stateInfoStr = localStorage.getItem("session-status")
+      const stateInfo = stateInfoStr ? JSON.parse(stateInfoStr) : { currentSessionIndex: 0, version: CURRENT_STORAGE_VERSION, lastUpdateTime: 0 }
+
+      if (name === StoreKey.Chat) { // get all state
+        let sessions = await idb_values(idbChatSessionStore)
+        const { currentSessionIndex, lastUpdateTime, version } = stateInfo
+
+        const stateInLocal = localStorage.getItem(StoreKey.Chat) || ''
+        if (stateInLocal && stateInLocal.length > 0) {
+
+          // 删除 localStorage 中的记录，再将记录保存成比的key用于备份
+          // 需要先删除，再保存，不然可能会出现保存文件大小超出 quota 的错误
+          localStorage.removeItem(StoreKey.Chat)
+          localStorage.setItem(StoreKey.Chat + '_bak', stateInLocal)
+
+          const stateInHistory = JSON.parse(stateInLocal)
+          const sessionsHistory: ChatSession[] = stateInHistory.state.sessions
+
+          const migrateSessions: ChatSession[] = []
+          sessionsHistory.map(itemOld => {
+            if (!sessions.find(item =>  item.id == itemOld.id)) {
+              migrateSessions.push(itemOld);
+            }
+          })
+          if (migrateSessions.length > 0) {
+            // update to IDB
+            const entries: [string, ChatSession][] = migrateSessions.map(item => [item.id, item])
+            await idb_setMany(entries, idbChatSessionStore)
+            sessions = sessions.concat(migrateSessions)
+          }
+        }
+        if (sessions.length == 0) { // 如果IDB和local-storage中均没有记录时，创建empty session
+          sessions = [createEmptySession()]
+        }
+        const result = { state: { sessions, currentSessionIndex, lastUpdateTime }, version }
+        console.log('result:', result)
+        return result
+
+      } else {
+        const result = (await idb_get(name, idbChatSessionStore)) || null
+        console.log('result:', result)
+        return result
+      }
+    },
+    setItem: async (name: string, value: any): Promise<void> => {
+      console.log("save for key:", name)
+      // console.log("   value  :", value)
+      const theState = value.state
+      const { currentSessionIndex, lastAction, sessions } = theState
+
+      // "clearSessions",
+      // "selectSession",
+      // "moveSession",
+      // "newSession",
+      // "importSession",
+      // "nextSession",
+      // "deleteSession",
+      // "currentSession",
+      // "updateMessage",
+      // "resetSession",
+      // "summarizeSession",
+      // "updateStat",
+      // "updateCurrentSession",
+      // "clearAllData"
+
+      if (lastAction == 'clearSessions') {
+        idb_clear(idbChatSessionStore)
+      } else if (lastAction == 'deleteSession') {
+        // need to get deleted session from IndexedDB sessions, and delete from idb
+        const sessionIdSet = new Set(sessions.map((item: any) => item.id));
+        const sessionsInDB = await idb_values(idbChatSessionStore)
+
+        const deletedSession = sessionsInDB.find((item: any) => !sessionIdSet.has(item.id))
+        await idb_del(deletedSession.id, idbChatSessionStore)
+
+      } else if (['restoreSession', 'importSessions'].indexOf(lastAction) >= 0) {
+        // need to get deleted session from state sessions, and save to idb
+        const sessionsInDB = await idb_values(idbChatSessionStore)
+        const sessionIdSet = new Set(sessionsInDB.map(item => item.id));
+
+        const sessionsToSave: ChatSession[] = []
+        sessions.map((item: ChatSession) => {
+          if (!(item.id in sessionIdSet)) {
+            sessionsToSave.push(item)
+          }
+        })
+        const entries: [string, ChatSession][] = sessionsToSave.map(item => [item.id, item])
+        await idb_setMany(entries, idbChatSessionStore)
+
+      } else if (['updateCurrentSession', 'importSession'].indexOf(lastAction) >= 0) { // update currentSession
+        const currSession = sessions[currentSessionIndex]
+        if (currSession) {
+          await idb_set(currSession.id, currSession, idbChatSessionStore)
+        }
+      } else if ('updateCurrentSessionStream' == lastAction) {
+        // getting response in stream, not update into IDB
+        return
+      }
+      const lastUpdateTime = Date.now()
+      localStorage.setItem("session-status", JSON.stringify({ currentSessionIndex, version: CURRENT_STORAGE_VERSION, lastUpdateTime }))
+    },
+    removeItem: async (name: string): Promise<void> => {
+      console.log("remove for key:", name)
+      await idb_del(name, idbChatSessionStore)
+    },
+  }
+
+  const persistStorage = {
+    getItem: (name: string) => {
+      var _a;
+      const parse = (str2: any) => {
+        if (str2 === null) {
+          return null;
+        }
+        return str2;
+      };
+      const str = (_a = idbChatStorage.getItem(name)) != null ? _a : null;
+      if (str instanceof Promise) {
+        return str.then(parse);
+      }
+      return parse(str);
+    },
+    setItem: (name: string, newValue: any) => idbChatStorage.setItem(name, newValue),
+    removeItem: (name: string) => idbChatStorage.removeItem(name)
+  };
+  return persistStorage;
+}
+
 
 export const useChatStore = createPersistStore(
   DEFAULT_CHAT_STATE,
@@ -159,6 +311,7 @@ export const useChatStore = createPersistStore(
     const methods = {
       clearSessions() {
         set(() => ({
+          lastAction: 'clearSessions',
           sessions: [createEmptySession()],
           currentSessionIndex: 0,
         }));
@@ -166,6 +319,7 @@ export const useChatStore = createPersistStore(
 
       selectSession(index: number) {
         set({
+          lastAction: 'selectSession',
           currentSessionIndex: index,
         });
       },
@@ -189,6 +343,7 @@ export const useChatStore = createPersistStore(
           }
 
           return {
+            lastAction: 'moveSession',
             currentSessionIndex: newIndex,
             sessions: newSessions,
           };
@@ -213,9 +368,36 @@ export const useChatStore = createPersistStore(
         }
 
         set((state) => ({
+          lastAction: 'newSession',
           currentSessionIndex: 0,
           sessions: [session].concat(state.sessions),
         }));
+      },
+
+      importSession(session: any) {
+
+        // init new session
+        const newsession = createEmptySession();
+
+        for (const message of session.messages) {
+          let newMessage: ChatMessage = {
+            id: message.id,
+            role: message.role,
+            content: message.content,
+            date: message.date || '',
+            model: message.model,
+          };
+          newsession.messages.push(newMessage);
+        }
+        newsession.lastUpdate = Date.now();
+
+        set((state) => ({
+          lastAction: 'importSession',
+          currentSessionIndex: 0,
+          sessions: [newsession].concat(state.sessions),
+        }));
+
+        get().summarizeSession();
       },
 
       nextSession(delta: number) {
@@ -231,7 +413,7 @@ export const useChatStore = createPersistStore(
 
         if (!deletedSession) return;
 
-        const sessions = get().sessions.slice();
+        const sessions = get().sessions.slice(); // get a copy of the sessions array
         sessions.splice(index, 1);
 
         const currentIndex = get().currentSessionIndex;
@@ -247,11 +429,13 @@ export const useChatStore = createPersistStore(
 
         // for undo delete action
         const restoreState = {
+          lastAction: 'restoreSession',
           currentSessionIndex: get().currentSessionIndex,
           sessions: get().sessions.slice(),
         };
 
         set(() => ({
+          lastAction: 'deleteSession',
           currentSessionIndex: nextIndex,
           sessions,
         }));
@@ -274,7 +458,7 @@ export const useChatStore = createPersistStore(
 
         if (index < 0 || index >= sessions.length) {
           index = Math.min(sessions.length - 1, Math.max(0, index));
-          set(() => ({ currentSessionIndex: index }));
+          set(() => ({ currentSessionIndex: index, lastAction: 'updateCurrentSessionIndex', }));
         }
 
         const session = sessions[index];
@@ -375,17 +559,18 @@ export const useChatStore = createPersistStore(
           ]);
         });
 
-        var api: ClientApi;
 
-        if (modelConfig.model.startsWith("claude")) {
-          api = new ClientApi(ModelProvider.Claude);
-        } else {
-          if (modelConfig.model.startsWith("gemini")) {
-            api = new ClientApi(ModelProvider.GeminiPro);
-          } else {
-            api = new ClientApi(ModelProvider.GPT);
-          }
-        }
+        var api: ClientApi = new ClientApi(ModelProvider.Claude);
+        // var api: ClientApi;
+        // if (modelConfig.model.startsWith("claude")) {
+        //   api = new ClientApi(ModelProvider.Claude);
+        // } else {
+        //   if (modelConfig.model.startsWith("gemini")) {
+        //     api = new ClientApi(ModelProvider.GeminiPro);
+        //   } else {
+        //     api = new ClientApi(ModelProvider.GPT);
+        //   }
+        // }
 
         // make request
         api.llm.chat({
@@ -396,11 +581,13 @@ export const useChatStore = createPersistStore(
             if (message) {
               botMessage.content = message;
             }
-            get().updateCurrentSession((session) => {
+            // Need to update state to update UI
+            get().updateCurrentSessionStream((session) => {
               session.messages = session.messages.concat();
             });
           },
           onFinish(message, metrics) {
+            console.log("[Chat response finished]: ", message);
             botMessage.streaming = false;
             if (message) {
               botMessage.content = message;
@@ -409,9 +596,10 @@ export const useChatStore = createPersistStore(
             if (metrics) {
               botMessage.metrics = metrics;
             }
-            get().updateCurrentSession((session) => {
-              session.messages = session.messages.concat();
-            });
+            // 已经在 get().onNewMessage() 中更新了 CurrentSession
+            // get().updateCurrentSession((session) => {
+            //   session.messages = session.messages.concat();
+            // });
             ChatControllerPool.remove(session.id, botMessage.id);
           },
           onError(error) {
@@ -477,14 +665,14 @@ export const useChatStore = createPersistStore(
         var systemPrompts: ChatMessage[] = [];
         systemPrompts = shouldInjectSystemPrompts
           ? [
-              createMessage({
-                role: "system",
-                content: fillTemplateWith("", {
-                  ...modelConfig,
-                  template: DEFAULT_SYSTEM_TEMPLATE,
-                }),
+            createMessage({
+              role: "system",
+              content: fillTemplateWith("", {
+                ...modelConfig,
+                template: DEFAULT_SYSTEM_TEMPLATE,
               }),
-            ]
+            }),
+          ]
           : [];
         if (shouldInjectSystemPrompts) {
           console.log(
@@ -571,14 +759,15 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
-        var api: ClientApi;
-        if (modelConfig.model.startsWith("gemini")) {
-          api = new ClientApi(ModelProvider.GeminiPro);
-        } else if (modelConfig.model.startsWith("claude")) {
-          api = new ClientApi(ModelProvider.Claude);
-        } else {
-          api = new ClientApi(ModelProvider.GPT);
-        }
+        var api: ClientApi = new ClientApi(ModelProvider.Claude);
+        // var api: ClientApi;
+        // if (modelConfig.model.startsWith("gemini")) {
+        //   api = new ClientApi(ModelProvider.GeminiPro);
+        // } else if (modelConfig.model.startsWith("claude")) {
+        //   api = new ClientApi(ModelProvider.Claude);
+        // } else {
+        //   api = new ClientApi(ModelProvider.GPT);
+        // }
 
         // remove error messages if any
         const messages = session.messages;
@@ -604,8 +793,8 @@ export const useChatStore = createPersistStore(
             onFinish(message) {
               get().updateCurrentSession(
                 (session) =>
-                  (session.topic =
-                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
+                (session.topic =
+                  message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
               );
             },
           });
@@ -679,25 +868,35 @@ export const useChatStore = createPersistStore(
           // TODO: should update chat count and word count
         });
       },
-
+      updateCurrentSessionStream(updater: (session: ChatSession) => void) {
+        const sessions = get().sessions;
+        const index = get().currentSessionIndex;
+        updater(sessions[index]);
+        set(() => ({ sessions, lastAction: 'updateCurrentSessionStream' }));
+      },
       updateCurrentSession(updater: (session: ChatSession) => void) {
         const sessions = get().sessions;
         const index = get().currentSessionIndex;
         updater(sessions[index]);
-        set(() => ({ sessions }));
+        // will update storage here
+        set(() => ({ sessions, lastAction: 'updateCurrentSession' }));
       },
 
       clearAllData() {
         localStorage.clear();
         location.reload();
+        set(() => ({
+          lastAction: 'clearSessions',
+          currentSessionIndex: 0,
+          sessions: [],
+        }));
       },
     };
-
     return methods;
   },
   {
     name: StoreKey.Chat,
-    version: 3.1,
+    version: CURRENT_STORAGE_VERSION,
     migrate(persistedState, version) {
       const state = persistedState as any;
       const newState = JSON.parse(
@@ -746,5 +945,6 @@ export const useChatStore = createPersistStore(
 
       return newState as any;
     },
+    storage: createIDBStorage(),
   },
 );

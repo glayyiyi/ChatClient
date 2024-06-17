@@ -22,7 +22,6 @@ import {
 import CopyIcon from "../icons/copy.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 import ChatGptIcon from "../icons/chatgpt.png";
-import BedrockIcon from "../icons/bedrock.png";
 import ShareIcon from "../icons/share.svg";
 import BotIcon from "../icons/bot.png";
 import BedrockBotIcon from "../icons/bedrock_16.png";
@@ -531,8 +530,8 @@ export function ImagePreviewer(props: {
         <div className={styles["chat-info"]}>
           <div className={styles["logo"] + " no-dark"}>
             <NextImage
-              src={BedrockIcon.src}
-              alt="logo"
+              src="/assets/bedrock.png"
+              alt="Bedrock"
               width={50}
               height={50}
             />
@@ -671,8 +670,10 @@ export function JsonPreviewer(props: {
       ...props.messages.map((m) => ({
         role: m.role,
         content: m.content,
+        date: m.date,
+        model: m.model,
       })),
-    ],
+    ]
   };
   const mdText = "```json\n" + JSON.stringify(msgs, null, 2) + "\n```";
   const minifiedJson = JSON.stringify(msgs);

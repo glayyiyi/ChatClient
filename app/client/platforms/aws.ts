@@ -10,7 +10,7 @@ import {
 import { useAccessStore, useAppConfig, useChatStore } from "@/app/store";
 
 import { BedrockClient, AWSConfig } from "@/app/client/platforms/aws_utils";
-
+import Locale from "../../locales";
 import {
   ChatOptions,
   getHeaders,
@@ -274,11 +274,11 @@ export class ClaudeApi implements LLMApi {
       accessStore.awsSecretAccessKey === ""
     ) {
       console.log("AWS credentials are not set");
-      options.onError?.(
-        new Error(
-          "AWS credentials are not set, go to settings page to set AWS credentials",
-        ),
-      );
+      let responseText = "";
+      const responseTexts = [responseText];
+      responseTexts.push(Locale.Error.Unauthorized);
+      responseText = responseTexts.join("\n\n");
+      options.onFinish(responseText);
       return;
     }
 

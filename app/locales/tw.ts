@@ -65,6 +65,7 @@ const tw = {
       Clear: "清除聊天",
       Settings: "對話設定",
       UploadImage: "上傳圖片",
+      ImportSession: "導入會話（JSON格式）",
     },
     Rename: "重新命名對話",
     Typing: "正在輸入…",
@@ -442,6 +443,7 @@ const tw = {
     Title: "挑選一個面具",
     SubTitle: "現在開始，與面具背後的靈魂思維碰撞",
     More: "搜尋更多",
+    Import: "導入會話",
   },
   URLCommand: {
     Code: "檢測到連結中已經包含訪問碼，是否自動填入？",

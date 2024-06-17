@@ -8,13 +8,13 @@ const cn = {
   Error: {
     Unauthorized: isApp
       ? "检测到无效 API Key，请前往[设置](/#/settings)页检查 API Key 是否配置正确。"
-      : "访问密码不正确或为空，请前往[登录](/#/auth)页输入正确的访问密码，或者在[设置](/#/settings)页填入你自己的 OpenAI API Key。",
+      : "认证信息不正确或为空，请前往[登录](/#/auth)页输入正确的AWS认证信息",
   },
   Auth: {
-    Title: "需要密码",
-    Tips: "管理员开启了密码验证，请在下方填入访问码",
-    SubTips: "或者输入你的 OpenAI 或 Google API 密钥",
-    Input: "在此处填写访问码",
+    Title: "需要AWS认证信息",
+    Tips: "Please enter AWS region, acess key and secret key below",
+    SubTips: "或者输入你的BRConnector API 密钥",
+    Input: "access key",
     Confirm: "确认",
     Later: "稍后再说",
   },
@@ -64,6 +64,7 @@ const cn = {
       Clear: "清除聊天",
       Settings: "对话设置",
       UploadImage: "上传图片",
+      ImportSession: "导入会话（JSON格式）",
     },
     Rename: "重命名对话",
     Typing: "正在输入…",
@@ -281,12 +282,12 @@ const cn = {
         Placeholder: "请输入访问密码",
       },
       CustomEndpoint: {
-        Title: "自定义接口",
-        SubTitle: "是否使用自定义 Azure 或 OpenAI 服务",
+        Title: "亚马逊云服务设置",
+        SubTitle: "配置亚马逊云服务的相关参数",
       },
       BRProxy: {
-        Title: "Enable BRProxy",
-        SubTitle: "如果使用AKSK请选择False，如果使用BRProxy请选择True",
+        Title: "启用 BRConnector",
+        SubTitle: "如果您部署了 BRConnector 请勾选此项",
       },
       Provider: {
         Title: "模型服务商",
@@ -312,14 +313,15 @@ const cn = {
         },
 
         Endpoint: {
-          Title: "AWS Endpoint",
-          SubTitle: "AWS Endpoint",
+          Title: "BRConnector 地址",
+          SubTitle: "请设置您的 BRConnector 的发布地址，必须包含 https://",
+          Placeholder: "input secret key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
         },
 
         ApiKey: {
           Title: "API Key",
-          SubTitle: "API Key",
-          Placeholder: "Enter API key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
+          SubTitle: "请注意：此处的 API Key 需要向 BRConnector 申请，形如：br_xxxxxxxxxxxxxxxxxxxxxxx",
+          Placeholder: "input secret key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
         },
       },
       OpenAI: {
@@ -403,7 +405,8 @@ const cn = {
     Prompt: {
       History: (content: string) => "这是历史聊天总结作为前情提要：" + content,
       Topic:
-        "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”",
+        "Use 2 to 8 Chinese characters to summarize the brief topic of the conversation, do not explain, do not use punctuation, do not use mood words, do not add extra text, do not bold, if there is no topic, please directly return “闲聊”",
+      // "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”",
       Summarize:
         "简要总结一下对话内容，用作后续的上下文提示 prompt，控制在 200 字以内",
     },
@@ -478,6 +481,7 @@ const cn = {
     Title: "挑选一个面具",
     SubTitle: "现在开始，与面具背后的灵魂思维碰撞",
     More: "查看全部",
+    Import: "导入会话",
   },
 
   URLCommand: {
@@ -510,8 +514,8 @@ const cn = {
 
 type DeepPartial<T> = T extends object
   ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
+    [P in keyof T]?: DeepPartial<T[P]>;
+  }
   : T;
 
 export type LocaleType = typeof cn;

@@ -14,7 +14,7 @@ import DownloadIcon from "../icons/download.svg";
 import UploadIcon from "../icons/upload.svg";
 import ConfigIcon from "../icons/config.svg";
 import ConfirmIcon from "../icons/confirm.svg";
-
+import GithubIcon from "../icons/github.svg";
 import ConnectionIcon from "../icons/connection.svg";
 import CloudSuccessIcon from "../icons/cloud-success.svg";
 import CloudFailIcon from "../icons/cloud-fail.svg";
@@ -498,9 +498,8 @@ function SyncItems() {
           title={Locale.Settings.Sync.CloudState}
           subTitle={
             syncStore.lastProvider
-              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${
-                  syncStore.lastProvider
-                }]`
+              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${syncStore.lastProvider
+              }]`
               : Locale.Settings.Sync.NotSyncYet
           }
         >
@@ -628,7 +627,7 @@ export function Settings() {
   const showUsage = accessStore.isAuthorized();
   useEffect(() => {
     // checks per minutes
-    checkUpdate();
+    // checkUpdate();
     showUsage && checkUsage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -702,14 +701,14 @@ export function Settings() {
             </Popover>
           </ListItem>
 
-          <ListItem
+          {/* <ListItem
             title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
             subTitle={
               checkingUpdate
                 ? Locale.Settings.Update.IsChecking
                 : hasNewVersion
-                ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
-                : Locale.Settings.Update.IsLatest
+                  ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
+                  : Locale.Settings.Update.IsLatest
             }
           >
             {checkingUpdate ? (
@@ -725,7 +724,7 @@ export function Settings() {
                 onClick={() => checkUpdate(true)}
               />
             )}
-          </ListItem>
+          </ListItem> */}
 
           <ListItem title={Locale.Settings.SendKey}>
             <Select
@@ -857,8 +856,8 @@ export function Settings() {
               onChange={(e) =>
                 updateConfig(
                   (config) =>
-                    (config.dontShowMaskSplashScreen =
-                      !e.currentTarget.checked),
+                  (config.dontShowMaskSplashScreen =
+                    !e.currentTarget.checked),
                 )
               }
             ></input>
@@ -941,7 +940,7 @@ export function Settings() {
                     title={Locale.Settings.Access.CustomEndpoint.Title}
                     subTitle={Locale.Settings.Access.CustomEndpoint.SubTitle}
                   >
-                    <input
+                    {/* <input
                       type="checkbox"
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
@@ -950,13 +949,13 @@ export function Settings() {
                             (access.useCustomConfig = e.currentTarget.checked),
                         )
                       }
-                    ></input>
+                    ></input> */}
                   </ListItem>
                 )
               }
               {accessStore.useCustomConfig && (
                 <>
-                  <ListItem
+                  {/* <ListItem
                     title={Locale.Settings.Access.Provider.Title}
                     subTitle={Locale.Settings.Access.Provider.SubTitle}
                   >
@@ -965,8 +964,8 @@ export function Settings() {
                       onChange={(e) => {
                         accessStore.update(
                           (access) =>
-                            (access.provider = e.target
-                              .value as ServiceProvider),
+                          (access.provider = e.target
+                            .value as ServiceProvider),
                         );
                       }}
                     >
@@ -976,11 +975,11 @@ export function Settings() {
                         </option>
                       ))}
                     </Select>
-                  </ListItem>
+                  </ListItem> */}
 
                   {accessStore.provider === "AWS" ? (
                     <>
-                      <ListItem
+                      {/* <ListItem
                         title={Locale.Settings.Access.BRProxy.Title}
                         subTitle={Locale.Settings.Access.BRProxy.SubTitle}
                       >
@@ -1000,6 +999,28 @@ export function Settings() {
                             </option>
                           ))}
                         </Select>
+                      </ListItem> */}
+                      <ListItem
+                        title={Locale.Settings.Access.BRProxy.Title}
+                        subTitle={Locale.Settings.Access.BRProxy.SubTitle}
+                      >
+                        <a href="https://github.com/aws-samples/sample-connector-for-bedrock" target="_blank">
+                          <IconButton
+                            text="BRConnector"
+                            icon={<GithubIcon />}
+                            bordered
+                          /></a>
+                        <input
+                          type="checkbox"
+                          checked={accessStore.useBRProxy === "True"}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) => {
+                                access.useBRProxy = e.currentTarget.checked ? "True" : "False";
+                              },
+                            )
+                          }
+                        ></input>
                       </ListItem>
                       {accessStore.useBRProxy === "False" ? (
                         <>
@@ -1038,8 +1059,8 @@ export function Settings() {
                               onChange={(e) => {
                                 accessStore.update(
                                   (access) =>
-                                    (access.awsAccessKeyId =
-                                      e.currentTarget.value),
+                                  (access.awsAccessKeyId =
+                                    e.currentTarget.value),
                                 );
                               }}
                             />
@@ -1059,8 +1080,8 @@ export function Settings() {
                               onChange={(e) => {
                                 accessStore.update(
                                   (access) =>
-                                    (access.awsSecretAccessKey =
-                                      e.currentTarget.value),
+                                  (access.awsSecretAccessKey =
+                                    e.currentTarget.value),
                                 );
                               }}
                             />
@@ -1101,8 +1122,8 @@ export function Settings() {
                               onChange={(e) => {
                                 accessStore.update(
                                   (access) =>
-                                    (access.openaiApiKey =
-                                      e.currentTarget.value),
+                                  (access.openaiApiKey =
+                                    e.currentTarget.value),
                                 );
                               }}
                             />
@@ -1201,8 +1222,8 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                                (access.azureApiVersion =
-                                  e.currentTarget.value),
+                              (access.azureApiVersion =
+                                e.currentTarget.value),
                             )
                           }
                         ></input>
@@ -1260,8 +1281,8 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                                (access.googleApiVersion =
-                                  e.currentTarget.value),
+                              (access.googleApiVersion =
+                                e.currentTarget.value),
                             )
                           }
                         ></input>
@@ -1281,9 +1302,9 @@ export function Settings() {
                   ? loadingUsage
                     ? Locale.Settings.Usage.IsChecking
                     : Locale.Settings.Usage.SubTitle(
-                        usage?.used ?? "[?]",
-                        usage?.subscription ?? "[?]",
-                      )
+                      usage?.used ?? "[?]",
+                      usage?.subscription ?? "[?]",
+                    )
                   : Locale.Settings.Usage.NoAccess
               }
             >
@@ -1333,6 +1354,6 @@ export function Settings() {
 
         <DangerItems />
       </div>
-    </ErrorBoundary>
+    </ErrorBoundary >
   );
 }

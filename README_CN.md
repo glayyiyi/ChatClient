@@ -9,26 +9,35 @@
 
 </div>
 
+## 重要的注意事项:
+```
+本项目是个样例项目，单纯用于展示如何构建一个连接Bedrock大语言模型的客户端。
+
+本项目并不是为生产环境准备的，请不要直接在生产环境使用。
+```
+
+
 ## 安装使用：
 
 根据你的电脑情况下载对应的链接:
 
 Windows用户解压下载的zip文件后点击msi文件进行安装。
 
-Mac用户解压下载的zip文件后直接打开 BRClient.app 使用
+Mac用户解压下载的zip文件后直接打开 BRClient.app 使用。
+项目中附加的Mac app文件由开源社区贡献者签名，仅为了方便测试，签名者保留一切和该签名有关的权利，被签名的文件也不在本项目开源协议覆盖范围中。
 
 Download links:
 
 Windows:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_windows.zip
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_windows.zip
 
 
 Mac M 系列:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_m_series.zip
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_m_series.zip
 
 
 Mac x86 系列:
-https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_x86_mac.zip
+https://github.com/aws-samples/BRClient/releases/download/v1.11.8/brclient_x86_mac.zip
 
 
 
@@ -41,7 +50,7 @@ https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_x86_mac
 
 目前项目还在快速开发阶段，所以建议使用开发者模式:
 
-1. 使用git克隆当前项目: `git clone https://github.com/DamonDeng/BRClient.git`
+1. 使用git克隆当前项目: `git clone https://github.com/aws-samples/BRClient.git`
 2. 安装yarn
 3. 进入项目文件夹
 4. 运行 `yarn install`安装依赖包
@@ -79,12 +88,6 @@ https://github.com/DamonDeng/BRClient/releases/download/v1.11.8/brclient_x86_mac
 ```
 
 有关 Amazon Bedrock 基于身份的策略的更多详细信息,请访问[链接](https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_id-based-policy-examples.html)。
-
-## 支持一下
-如果你喜欢这个项目，大概率是因为你喜欢这个界面，那给项目的原作者yidadaa买杯咖啡吧
-
-[给原作者买杯咖啡，记得要大杯](https://www.buymeacoffee.com/yidadaa)
-
 
 
 ## 开源协议

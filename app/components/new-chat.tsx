@@ -7,6 +7,7 @@ import styles from "./new-chat.module.scss";
 import LeftIcon from "../icons/left.svg";
 import LightningIcon from "../icons/lightning.svg";
 import EyeIcon from "../icons/eye.svg";
+import ImportIcon from "../icons/import.svg";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { Mask, useMaskStore } from "../store/mask";
@@ -16,6 +17,9 @@ import { MaskAvatar } from "./mask";
 import { useCommand } from "../command";
 import { showConfirm } from "./ui-lib";
 import { BUILTIN_MASK_STORE } from "../masks";
+import {
+  readFromFile,
+} from "../utils";
 
 function MaskItem(props: { mask: Mask; onClick?: () => void }) {
   return (
@@ -92,6 +96,16 @@ export function NewChat() {
     }, 10);
   };
 
+  const importFromFile = () => {
+    readFromFile().then((content) => {
+      try {
+        const session = JSON.parse(content);
+        chatStore.importSession(session);
+        navigate(Path.Chat);
+      } catch {}
+    });
+  };
+
   useCommand({
     mask: (id) => {
       try {
@@ -154,6 +168,15 @@ export function NewChat() {
           icon={<EyeIcon />}
           bordered
           shadow
+        />
+
+        <IconButton
+          text={Locale.NewChat.Import}
+          onClick={() => importFromFile()}
+          icon={<ImportIcon />}
+          bordered
+          shadow
+          className={styles["import"]}
         />
 
         <IconButton

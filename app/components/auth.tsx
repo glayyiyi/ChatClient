@@ -7,7 +7,7 @@ import { useAccessStore } from "../store";
 import Locale from "../locales";
 
 import BotIcon from "../icons/bot.svg";
-import BedrockBotIcon from "../icons/bedrock_16.svg";
+import BedrockBotIcon from "../icons/bedrock_32.svg";
 
 import { useEffect } from "react";
 import { getClientConfig } from "../config/client";
@@ -43,42 +43,37 @@ export function AuthPage() {
 
       <input
         className={styles["auth-input"]}
-        type="password"
-        placeholder={Locale.Auth.Input}
-        value={accessStore.accessCode}
+        type="text"
+        placeholder={Locale.Settings.Access.AWS.Region.Placeholder}
+        value={accessStore.awsRegion}
         onChange={(e) => {
           accessStore.update(
-            (access) => (access.accessCode = e.currentTarget.value),
+            (access) => (access.awsRegion = e.currentTarget.value),
           );
         }}
       />
-      {!accessStore.hideUserApiKey ? (
-        <>
-          <div className={styles["auth-tips"]}>{Locale.Auth.SubTips}</div>
-          <input
-            className={styles["auth-input"]}
-            type="password"
-            placeholder={Locale.Settings.Access.OpenAI.ApiKey.Placeholder}
-            value={accessStore.openaiApiKey}
-            onChange={(e) => {
-              accessStore.update(
-                (access) => (access.openaiApiKey = e.currentTarget.value),
-              );
-            }}
-          />
-          <input
-            className={styles["auth-input"]}
-            type="password"
-            placeholder={Locale.Settings.Access.Google.ApiKey.Placeholder}
-            value={accessStore.googleApiKey}
-            onChange={(e) => {
-              accessStore.update(
-                (access) => (access.googleApiKey = e.currentTarget.value),
-              );
-            }}
-          />
-        </>
-      ) : null}
+      <input
+        className={styles["auth-input"]}
+        type="password"
+        placeholder={Locale.Settings.Access.AWS.AccessKey.Placeholder}
+        value={accessStore.awsAccessKeyId}
+        onChange={(e) => {
+          accessStore.update(
+            (access) => (access.awsAccessKeyId = e.currentTarget.value),
+          );
+        }}
+      />
+      <input
+        className={styles["auth-input"]}
+        type="password"
+        placeholder={Locale.Settings.Access.AWS.SecretKey.Placeholder}
+        value={accessStore.awsSecretAccessKey}
+        onChange={(e) => {
+          accessStore.update(
+            (access) => (access.awsSecretAccessKey = e.currentTarget.value),
+          );
+        }}
+      />
 
       <div className={styles["auth-actions"]}>
         <IconButton

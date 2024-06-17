@@ -300,8 +300,8 @@ export function getMessageImages(message: RequestMessage): string[] {
   return urls;
 }
 
-export function isVisionModel(model: string) {
-  return (
+export function isVisionModel(model: string, models?: any) {
+  if (
     // model.startsWith("gpt-4-vision") ||
     // model.startsWith("gemini-pro-vision") ||
     model.includes("vision") ||
@@ -310,7 +310,15 @@ export function isVisionModel(model: string) {
     model.includes("Claude3") ||
     (model.includes("Claude") && model.includes("3")) ||
     model.includes("claude-3")
-  );
+  ) {
+    return true;
+  }
+  const currentModel = models?.find((v: any) => v.name === model);
+
+  if (currentModel?.multiple) {
+    return true;
+  }
+  return false;
 }
 
 /**

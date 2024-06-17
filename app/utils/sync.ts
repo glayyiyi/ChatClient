@@ -130,6 +130,7 @@ export function getLocalAppState() {
 
 export function setLocalAppState(appState: AppState) {
   Object.entries(LocalStateSetters).forEach(([key, setter]) => {
+    console.log('synced:', key)
     setter(appState[key as keyof AppState]);
   });
 }
