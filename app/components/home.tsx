@@ -31,6 +31,7 @@ import { AuthPage } from "./auth";
 import { getClientConfig } from "../config/client";
 import { ClientApi } from "../client/api";
 import { useAccessStore } from "../store";
+import { identifyDefaultClaudeModel } from "../utils/checkers";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -141,7 +142,8 @@ function Screen() {
     <div
       className={
         styles.container +
-        ` ${shouldTightBorder ? styles["tight-container"] : styles.container} ${getLang() === "ar" ? styles["rtl-screen"] : ""
+        ` ${shouldTightBorder ? styles["tight-container"] : styles.container} ${
+          getLang() === "ar" ? styles["rtl-screen"] : ""
         }`
       }
     >
@@ -170,12 +172,21 @@ function Screen() {
 
 export function useLoadData() {
   const config = useAppConfig();
-  var api: ClientApi = new ClientApi(ModelProvider.AWS);
+  // var api: ClientApi = new ClientApi(ModelProvider.AWS);
   // if (config.modelConfig.model.startsWith("gemini")) {
   //   api = new ClientApi(ModelProvider.GeminiPro);
   // } else {
   //   api = new ClientApi(ModelProvider.GPT);
   // }
+
+  var api: ClientApi;
+  if (config.modelConfig.model.startsWith("gemini")) {
+    api = new ClientApi(ModelProvider.GeminiPro);
+  } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
+    api = new ClientApi(ModelProvider.Claude);
+  } else {
+    api = new ClientApi(ModelProvider.GPT);
+  }
   useEffect(() => {
     (async () => {
       const models = await api.llm.models();

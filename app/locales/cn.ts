@@ -320,7 +320,8 @@ const cn = {
 
         ApiKey: {
           Title: "API Key",
-          SubTitle: "请注意：此处的 API Key 需要向 BRConnector 申请，形如：br_xxxxxxxxxxxxxxxxxxxxxxx",
+          SubTitle:
+            "请注意：此处的 API Key 需要向 BRConnector 申请，形如：br_xxxxxxxxxxxxxxxxxxxxxxx",
           Placeholder: "input secret key, xxxxxxxxxxxxxxxxxxxxxxxxxx",
         },
       },
@@ -351,6 +352,23 @@ const cn = {
         ApiVerion: {
           Title: "接口版本 (azure api version)",
           SubTitle: "选择指定的部分版本",
+        },
+      },
+      Anthropic: {
+        ApiKey: {
+          Title: "接口密钥",
+          SubTitle: "使用自定义 Anthropic Key 绕过密码访问限制",
+          Placeholder: "Anthropic API Key",
+        },
+
+        Endpoint: {
+          Title: "接口地址",
+          SubTitle: "样例：",
+        },
+
+        ApiVerion: {
+          Title: "接口版本 (claude api version)",
+          SubTitle: "选择一个特定的 API 版本输入",
         },
       },
       Google: {
@@ -514,8 +532,8 @@ const cn = {
 
 type DeepPartial<T> = T extends object
   ? {
-    [P in keyof T]?: DeepPartial<T[P]>;
-  }
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
   : T;
 
 export type LocaleType = typeof cn;

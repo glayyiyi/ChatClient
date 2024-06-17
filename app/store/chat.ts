@@ -1,14 +1,16 @@
 import { trimTopic, getMessageTextContent } from "../utils";
 
-import { get as idb_get, 
-          set as idb_set,
-          setMany as idb_setMany,
-          del as idb_del, 
-          values as idb_values, 
-          clear as idb_clear,
-          createStore as idb_createStore, 
-          set} from 'idb-keyval' // can use anything: IndexedDB, Ionic Storage, etc.
-import { createJSONStorage, StateStorage } from 'zustand/middleware'
+import {
+  get as idb_get,
+  set as idb_set,
+  setMany as idb_setMany,
+  del as idb_del,
+  values as idb_values,
+  clear as idb_clear,
+  createStore as idb_createStore,
+  set,
+} from "idb-keyval"; // can use anything: IndexedDB, Ionic Storage, etc.
+import { createJSONStorage, StateStorage } from "zustand/middleware";
 
 import Locale, { getLang } from "../locales";
 import { showToast } from "../components/ui-lib";
@@ -30,6 +32,9 @@ import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
 import { nanoid } from "nanoid";
 import { createPersistStore } from "../utils/store";
+import { identifyDefaultClaudeModel } from "../utils/checkers";
+import { collectModelsWithDefaultModel } from "../utils/model";
+import { useAccessStore } from "./access";
 
 export type ChatMessage = RequestMessage & {
   date: string;
@@ -97,9 +102,19 @@ function createEmptySession(): ChatSession {
 function getSummarizeModel(currentModel: string) {
   // if it is using gpt-* models, force to use 3.5 to summarize
   if (currentModel.startsWith("gpt")) {
-    return SUMMARIZE_MODEL;
+    const configStore = useAppConfig.getState();
+    const accessStore = useAccessStore.getState();
+    const allModel = collectModelsWithDefaultModel(
+      configStore.models,
+      [configStore.customModels, accessStore.customModels].join(","),
+      accessStore.defaultModel,
+    );
+    const summarizeModel = allModel.find(
+      (m) => m.name === SUMMARIZE_MODEL && m.available,
+    );
+    return summarizeModel?.name ?? currentModel;
   }
-  if (currentModel.startsWith("gemini-pro")) {
+  if (currentModel.startsWith("gemini")) {
     return GEMINI_SUMMARIZE_MODEL;
   }
   return currentModel;
@@ -130,12 +145,17 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
     ServiceProvider: serviceProvider,
     cutoff,
     model: modelConfig.model,
-    time: new Date().toLocaleString(),
+    time: new Date().toString(),
     lang: getLang(),
     input: input,
   };
 
   let output = modelConfig.template ?? DEFAULT_INPUT_TEMPLATE;
+
+  // remove duplicate
+  if (input.startsWith(output)) {
+    output = "";
+  }
 
   // must contains {{input}}
   const inputVar = "{{input}}";
@@ -153,71 +173,85 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
 
 const DEFAULT_CHAT_STATE = {
   sessions: [createEmptySession()],
-  lastAction: '',
+  lastAction: "",
   currentSessionIndex: 0,
 };
-const CURRENT_STORAGE_VERSION = 4.0
+const CURRENT_STORAGE_VERSION = 4.0;
 
 import { indexedDB as fakeIndexedDB } from "fake-indexeddb";
 
 const createIDBStorage = () => {
-  console.log("Creating IDBStorage")
+  console.log("Creating IDBStorage");
   if (typeof indexedDB === "undefined") {
     global.indexedDB = fakeIndexedDB;
-  }  
-  const idbChatSessionStore = idb_createStore('brclient-chat-store', 'sessions-store');
+  }
+  const idbChatSessionStore = idb_createStore(
+    "brclient-chat-store",
+    "sessions-store",
+  );
   const idbChatStorage: StateStorage = {
     getItem: async (name: string): Promise<any> => {
-      console.log("get for key:", name)
-      const stateInfoStr = localStorage.getItem("session-status")
-      const stateInfo = stateInfoStr ? JSON.parse(stateInfoStr) : { currentSessionIndex: 0, version: CURRENT_STORAGE_VERSION, lastUpdateTime: 0 }
+      console.log("get for key:", name);
+      const stateInfoStr = localStorage.getItem("session-status");
+      const stateInfo = stateInfoStr
+        ? JSON.parse(stateInfoStr)
+        : {
+            currentSessionIndex: 0,
+            version: CURRENT_STORAGE_VERSION,
+            lastUpdateTime: 0,
+          };
 
-      if (name === StoreKey.Chat) { // get all state
-        let sessions = await idb_values(idbChatSessionStore)
-        const { currentSessionIndex, lastUpdateTime, version } = stateInfo
+      if (name === StoreKey.Chat) {
+        // get all state
+        let sessions = await idb_values(idbChatSessionStore);
+        const { currentSessionIndex, lastUpdateTime, version } = stateInfo;
 
-        const stateInLocal = localStorage.getItem(StoreKey.Chat) || ''
+        const stateInLocal = localStorage.getItem(StoreKey.Chat) || "";
         if (stateInLocal && stateInLocal.length > 0) {
-
           // 删除 localStorage 中的记录，再将记录保存成比的key用于备份
           // 需要先删除，再保存，不然可能会出现保存文件大小超出 quota 的错误
-          localStorage.removeItem(StoreKey.Chat)
-          localStorage.setItem(StoreKey.Chat + '_bak', stateInLocal)
+          localStorage.removeItem(StoreKey.Chat);
+          localStorage.setItem(StoreKey.Chat + "_bak", stateInLocal);
 
-          const stateInHistory = JSON.parse(stateInLocal)
-          const sessionsHistory: ChatSession[] = stateInHistory.state.sessions
+          const stateInHistory = JSON.parse(stateInLocal);
+          const sessionsHistory: ChatSession[] = stateInHistory.state.sessions;
 
-          const migrateSessions: ChatSession[] = []
-          sessionsHistory.map(itemOld => {
-            if (!sessions.find(item =>  item.id == itemOld.id)) {
+          const migrateSessions: ChatSession[] = [];
+          sessionsHistory.map((itemOld) => {
+            if (!sessions.find((item) => item.id == itemOld.id)) {
               migrateSessions.push(itemOld);
             }
-          })
+          });
           if (migrateSessions.length > 0) {
             // update to IDB
-            const entries: [string, ChatSession][] = migrateSessions.map(item => [item.id, item])
-            await idb_setMany(entries, idbChatSessionStore)
-            sessions = sessions.concat(migrateSessions)
+            const entries: [string, ChatSession][] = migrateSessions.map(
+              (item) => [item.id, item],
+            );
+            await idb_setMany(entries, idbChatSessionStore);
+            sessions = sessions.concat(migrateSessions);
           }
         }
-        if (sessions.length == 0) { // 如果IDB和local-storage中均没有记录时，创建empty session
-          sessions = [createEmptySession()]
+        if (sessions.length == 0) {
+          // 如果IDB和local-storage中均没有记录时，创建empty session
+          sessions = [createEmptySession()];
         }
-        const result = { state: { sessions, currentSessionIndex, lastUpdateTime }, version }
-        console.log('result:', result)
-        return result
-
+        const result = {
+          state: { sessions, currentSessionIndex, lastUpdateTime },
+          version,
+        };
+        console.log("result:", result);
+        return result;
       } else {
-        const result = (await idb_get(name, idbChatSessionStore)) || null
-        console.log('result:', result)
-        return result
+        const result = (await idb_get(name, idbChatSessionStore)) || null;
+        console.log("result:", result);
+        return result;
       }
     },
     setItem: async (name: string, value: any): Promise<void> => {
-      console.log("save for key:", name)
+      console.log("save for key:", name);
       // console.log("   value  :", value)
-      const theState = value.state
-      const { currentSessionIndex, lastAction, sessions } = theState
+      const theState = value.state;
+      const { currentSessionIndex, lastAction, sessions } = theState;
 
       // "clearSessions",
       // "selectSession",
@@ -234,47 +268,62 @@ const createIDBStorage = () => {
       // "updateCurrentSession",
       // "clearAllData"
 
-      if (lastAction == 'clearSessions') {
-        idb_clear(idbChatSessionStore)
-      } else if (lastAction == 'deleteSession') {
+      if (lastAction == "clearSessions") {
+        idb_clear(idbChatSessionStore);
+      } else if (lastAction == "deleteSession") {
         // need to get deleted session from IndexedDB sessions, and delete from idb
         const sessionIdSet = new Set(sessions.map((item: any) => item.id));
-        const sessionsInDB = await idb_values(idbChatSessionStore)
+        const sessionsInDB = await idb_values(idbChatSessionStore);
 
-        const deletedSession = sessionsInDB.find((item: any) => !sessionIdSet.has(item.id))
-        await idb_del(deletedSession.id, idbChatSessionStore)
-
-      } else if (['restoreSession', 'importSessions'].indexOf(lastAction) >= 0) {
+        const deletedSession = sessionsInDB.find(
+          (item: any) => !sessionIdSet.has(item.id),
+        );
+        await idb_del(deletedSession.id, idbChatSessionStore);
+      } else if (
+        ["restoreSession", "importSessions"].indexOf(lastAction) >= 0
+      ) {
         // need to get deleted session from state sessions, and save to idb
-        const sessionsInDB = await idb_values(idbChatSessionStore)
-        const sessionIdSet = new Set(sessionsInDB.map(item => item.id));
+        const sessionsInDB = await idb_values(idbChatSessionStore);
+        const sessionIdSet = new Set(sessionsInDB.map((item) => item.id));
 
-        const sessionsToSave: ChatSession[] = []
+        const sessionsToSave: ChatSession[] = [];
         sessions.map((item: ChatSession) => {
           if (!(item.id in sessionIdSet)) {
-            sessionsToSave.push(item)
+            sessionsToSave.push(item);
           }
-        })
-        const entries: [string, ChatSession][] = sessionsToSave.map(item => [item.id, item])
-        await idb_setMany(entries, idbChatSessionStore)
-
-      } else if (['updateCurrentSession', 'importSession'].indexOf(lastAction) >= 0) { // update currentSession
-        const currSession = sessions[currentSessionIndex]
+        });
+        const entries: [string, ChatSession][] = sessionsToSave.map((item) => [
+          item.id,
+          item,
+        ]);
+        await idb_setMany(entries, idbChatSessionStore);
+      } else if (
+        ["updateCurrentSession", "importSession"].indexOf(lastAction) >= 0
+      ) {
+        // update currentSession
+        const currSession = sessions[currentSessionIndex];
         if (currSession) {
-          await idb_set(currSession.id, currSession, idbChatSessionStore)
+          await idb_set(currSession.id, currSession, idbChatSessionStore);
         }
-      } else if ('updateCurrentSessionStream' == lastAction) {
+      } else if ("updateCurrentSessionStream" == lastAction) {
         // getting response in stream, not update into IDB
-        return
+        return;
       }
-      const lastUpdateTime = Date.now()
-      localStorage.setItem("session-status", JSON.stringify({ currentSessionIndex, version: CURRENT_STORAGE_VERSION, lastUpdateTime }))
+      const lastUpdateTime = Date.now();
+      localStorage.setItem(
+        "session-status",
+        JSON.stringify({
+          currentSessionIndex,
+          version: CURRENT_STORAGE_VERSION,
+          lastUpdateTime,
+        }),
+      );
     },
     removeItem: async (name: string): Promise<void> => {
-      console.log("remove for key:", name)
-      await idb_del(name, idbChatSessionStore)
+      console.log("remove for key:", name);
+      await idb_del(name, idbChatSessionStore);
     },
-  }
+  };
 
   const persistStorage = {
     getItem: (name: string) => {
@@ -291,12 +340,12 @@ const createIDBStorage = () => {
       }
       return parse(str);
     },
-    setItem: (name: string, newValue: any) => idbChatStorage.setItem(name, newValue),
-    removeItem: (name: string) => idbChatStorage.removeItem(name)
+    setItem: (name: string, newValue: any) =>
+      idbChatStorage.setItem(name, newValue),
+    removeItem: (name: string) => idbChatStorage.removeItem(name),
   };
   return persistStorage;
-}
-
+};
 
 export const useChatStore = createPersistStore(
   DEFAULT_CHAT_STATE,
@@ -311,7 +360,7 @@ export const useChatStore = createPersistStore(
     const methods = {
       clearSessions() {
         set(() => ({
-          lastAction: 'clearSessions',
+          lastAction: "clearSessions",
           sessions: [createEmptySession()],
           currentSessionIndex: 0,
         }));
@@ -319,7 +368,7 @@ export const useChatStore = createPersistStore(
 
       selectSession(index: number) {
         set({
-          lastAction: 'selectSession',
+          lastAction: "selectSession",
           currentSessionIndex: index,
         });
       },
@@ -343,7 +392,7 @@ export const useChatStore = createPersistStore(
           }
 
           return {
-            lastAction: 'moveSession',
+            lastAction: "moveSession",
             currentSessionIndex: newIndex,
             sessions: newSessions,
           };
@@ -368,14 +417,13 @@ export const useChatStore = createPersistStore(
         }
 
         set((state) => ({
-          lastAction: 'newSession',
+          lastAction: "newSession",
           currentSessionIndex: 0,
           sessions: [session].concat(state.sessions),
         }));
       },
 
       importSession(session: any) {
-
         // init new session
         const newsession = createEmptySession();
 
@@ -384,7 +432,7 @@ export const useChatStore = createPersistStore(
             id: message.id,
             role: message.role,
             content: message.content,
-            date: message.date || '',
+            date: message.date || "",
             model: message.model,
           };
           newsession.messages.push(newMessage);
@@ -392,7 +440,7 @@ export const useChatStore = createPersistStore(
         newsession.lastUpdate = Date.now();
 
         set((state) => ({
-          lastAction: 'importSession',
+          lastAction: "importSession",
           currentSessionIndex: 0,
           sessions: [newsession].concat(state.sessions),
         }));
@@ -429,13 +477,13 @@ export const useChatStore = createPersistStore(
 
         // for undo delete action
         const restoreState = {
-          lastAction: 'restoreSession',
+          lastAction: "restoreSession",
           currentSessionIndex: get().currentSessionIndex,
           sessions: get().sessions.slice(),
         };
 
         set(() => ({
-          lastAction: 'deleteSession',
+          lastAction: "deleteSession",
           currentSessionIndex: nextIndex,
           sessions,
         }));
@@ -458,7 +506,10 @@ export const useChatStore = createPersistStore(
 
         if (index < 0 || index >= sessions.length) {
           index = Math.min(sessions.length - 1, Math.max(0, index));
-          set(() => ({ currentSessionIndex: index, lastAction: 'updateCurrentSessionIndex', }));
+          set(() => ({
+            currentSessionIndex: index,
+            lastAction: "updateCurrentSessionIndex",
+          }));
         }
 
         const session = sessions[index];
@@ -559,8 +610,7 @@ export const useChatStore = createPersistStore(
           ]);
         });
 
-
-        var api: ClientApi = new ClientApi(ModelProvider.Claude);
+        // var api: ClientApi = new ClientApi(ModelProvider.Claude);
         // var api: ClientApi;
         // if (modelConfig.model.startsWith("claude")) {
         //   api = new ClientApi(ModelProvider.Claude);
@@ -571,6 +621,14 @@ export const useChatStore = createPersistStore(
         //     api = new ClientApi(ModelProvider.GPT);
         //   }
         // }
+        var api: ClientApi;
+        if (modelConfig.model.startsWith("gemini")) {
+          api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (identifyDefaultClaudeModel(modelConfig.model)) {
+          api = new ClientApi(ModelProvider.Claude);
+        } else {
+          api = new ClientApi(ModelProvider.GPT);
+        }
 
         // make request
         api.llm.chat({
@@ -637,14 +695,13 @@ export const useChatStore = createPersistStore(
       getMemoryPrompt() {
         const session = get().currentSession();
 
-        return {
-          role: "system",
-          content:
-            session.memoryPrompt.length > 0
-              ? Locale.Store.Prompt.History(session.memoryPrompt)
-              : "",
-          date: "",
-        } as ChatMessage;
+        if (session.memoryPrompt.length) {
+          return {
+            role: "system",
+            content: Locale.Store.Prompt.History(session.memoryPrompt),
+            date: "",
+          } as ChatMessage;
+        }
       },
 
       getMessagesWithMemory() {
@@ -665,14 +722,14 @@ export const useChatStore = createPersistStore(
         var systemPrompts: ChatMessage[] = [];
         systemPrompts = shouldInjectSystemPrompts
           ? [
-            createMessage({
-              role: "system",
-              content: fillTemplateWith("", {
-                ...modelConfig,
-                template: DEFAULT_SYSTEM_TEMPLATE,
+              createMessage({
+                role: "system",
+                content: fillTemplateWith("", {
+                  ...modelConfig,
+                  template: DEFAULT_SYSTEM_TEMPLATE,
+                }),
               }),
-            }),
-          ]
+            ]
           : [];
         if (shouldInjectSystemPrompts) {
           console.log(
@@ -680,16 +737,15 @@ export const useChatStore = createPersistStore(
             systemPrompts.at(0)?.content ?? "empty",
           );
         }
-
+        const memoryPrompt = get().getMemoryPrompt();
         // long term memory
         const shouldSendLongTermMemory =
           modelConfig.sendMemory &&
           session.memoryPrompt &&
           session.memoryPrompt.length > 0 &&
           session.lastSummarizeIndex > clearContextIndex;
-        const longTermMemoryPrompts = shouldSendLongTermMemory
-          ? [get().getMemoryPrompt()]
-          : [];
+        const longTermMemoryPrompts =
+          shouldSendLongTermMemory && memoryPrompt ? [memoryPrompt] : [];
         const longTermMemoryStartIndex = session.lastSummarizeIndex;
 
         // short term memory
@@ -723,7 +779,6 @@ export const useChatStore = createPersistStore(
           tokenCount += estimateTokenLength(getMessageTextContent(msg));
           reversedRecentMessages.push(msg);
         }
-
         // concat all messages
         const recentMessages = [
           ...systemPrompts,
@@ -759,7 +814,7 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
-        var api: ClientApi = new ClientApi(ModelProvider.Claude);
+        // var api: ClientApi = new ClientApi(ModelProvider.Claude);
         // var api: ClientApi;
         // if (modelConfig.model.startsWith("gemini")) {
         //   api = new ClientApi(ModelProvider.GeminiPro);
@@ -768,6 +823,14 @@ export const useChatStore = createPersistStore(
         // } else {
         //   api = new ClientApi(ModelProvider.GPT);
         // }
+        var api: ClientApi;
+        if (modelConfig.model.startsWith("gemini")) {
+          api = new ClientApi(ModelProvider.GeminiPro);
+        } else if (identifyDefaultClaudeModel(modelConfig.model)) {
+          api = new ClientApi(ModelProvider.Claude);
+        } else {
+          api = new ClientApi(ModelProvider.GPT);
+        }
 
         // remove error messages if any
         const messages = session.messages;
@@ -789,12 +852,13 @@ export const useChatStore = createPersistStore(
             messages: topicMessages,
             config: {
               model: getSummarizeModel(session.mask.modelConfig.model),
+              stream: false,
             },
             onFinish(message) {
               get().updateCurrentSession(
                 (session) =>
-                (session.topic =
-                  message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
+                  (session.topic =
+                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
               );
             },
           });
@@ -815,9 +879,11 @@ export const useChatStore = createPersistStore(
             Math.max(0, n - modelConfig.historyMessageCount),
           );
         }
-
-        // add memory prompt
-        toBeSummarizedMsgs.unshift(get().getMemoryPrompt());
+        const memoryPrompt = get().getMemoryPrompt();
+        if (memoryPrompt) {
+          // add memory prompt
+          toBeSummarizedMsgs.unshift(memoryPrompt);
+        }
 
         const lastSummarizeIndex = session.messages.length;
 
@@ -832,6 +898,10 @@ export const useChatStore = createPersistStore(
           historyMsgLength > modelConfig.compressMessageLengthThreshold &&
           modelConfig.sendMemory
         ) {
+          /** Destruct max_tokens while summarizing
+           * this param is just shit
+           **/
+          const { max_tokens, ...modelcfg } = modelConfig;
           api.llm.chat({
             messages: toBeSummarizedMsgs.concat(
               createMessage({
@@ -841,7 +911,7 @@ export const useChatStore = createPersistStore(
               }),
             ),
             config: {
-              ...modelConfig,
+              ...modelcfg,
               stream: true,
               model: getSummarizeModel(session.mask.modelConfig.model),
             },
@@ -872,21 +942,21 @@ export const useChatStore = createPersistStore(
         const sessions = get().sessions;
         const index = get().currentSessionIndex;
         updater(sessions[index]);
-        set(() => ({ sessions, lastAction: 'updateCurrentSessionStream' }));
+        set(() => ({ sessions, lastAction: "updateCurrentSessionStream" }));
       },
       updateCurrentSession(updater: (session: ChatSession) => void) {
         const sessions = get().sessions;
         const index = get().currentSessionIndex;
         updater(sessions[index]);
         // will update storage here
-        set(() => ({ sessions, lastAction: 'updateCurrentSession' }));
+        set(() => ({ sessions, lastAction: "updateCurrentSession" }));
       },
 
       clearAllData() {
         localStorage.clear();
         location.reload();
         set(() => ({
-          lastAction: 'clearSessions',
+          lastAction: "clearSessions",
           currentSessionIndex: 0,
           sessions: [],
         }));

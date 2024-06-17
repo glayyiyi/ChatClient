@@ -5,7 +5,7 @@ import { LocaleType } from "./index";
 // if you are adding a new translation, please use PartialLocaleType instead of LocaleType
 
 const isApp = !!getClientConfig()?.isApp;
-console.log(isApp)
+console.log(isApp);
 const en: LocaleType = {
   WIP: "Coming Soon...",
   Error: {
@@ -292,8 +292,7 @@ const en: LocaleType = {
       },
       BRProxy: {
         Title: "Enable BRConnector",
-        SubTitle:
-          "If you have deployed BRConnector, please check this option.",
+        SubTitle: "If you have deployed BRConnector, please check this option.",
       },
       Provider: {
         Title: "Model Provider",
@@ -319,7 +318,8 @@ const en: LocaleType = {
         },
         Endpoint: {
           Title: "BRConnector Endpoint",
-          SubTitle: "Please set your BRConnector endpoint, it must start with https://",
+          SubTitle:
+            "Please set your BRConnector endpoint, it must start with https://",
           Placeholder: "input BRConnector Endpoint",
         },
         ApiKey: {
@@ -337,7 +337,7 @@ const en: LocaleType = {
 
         Endpoint: {
           Title: "OpenAI Endpoint",
-          SubTitle: "Must starts with http(s):// or use /api/openai as default",
+          SubTitle: "Must start with http(s):// or use /api/openai as default",
         },
       },
       Azure: {
@@ -355,6 +355,24 @@ const en: LocaleType = {
         ApiVerion: {
           Title: "Azure Api Version",
           SubTitle: "Check your api version from azure console",
+        },
+      },
+      Anthropic: {
+        ApiKey: {
+          Title: "Anthropic API Key",
+          SubTitle:
+            "Use a custom Anthropic Key to bypass password access restrictions",
+          Placeholder: "Anthropic API Key",
+        },
+
+        Endpoint: {
+          Title: "Endpoint Address",
+          SubTitle: "Example:",
+        },
+
+        ApiVerion: {
+          Title: "API Version (claude api version)",
+          SubTitle: "Select and input a specific API version",
         },
       },
       CustomModel: {

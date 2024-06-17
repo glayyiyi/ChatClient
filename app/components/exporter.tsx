@@ -41,6 +41,7 @@ import { EXPORT_MESSAGE_CLASS_NAME, ModelProvider } from "../constant";
 import { getClientConfig } from "../config/client";
 import { ClientApi } from "../client/api";
 import { getMessageTextContent } from "../utils";
+import { identifyDefaultClaudeModel } from "../utils/checkers";
 
 const Markdown = dynamic(async () => (await import("./markdown")).Markdown, {
   loading: () => <LoadingIcon />,
@@ -316,6 +317,8 @@ export function PreviewActions(props: {
     var api: ClientApi;
     if (config.modelConfig.model.startsWith("gemini")) {
       api = new ClientApi(ModelProvider.GeminiPro);
+    } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
+      api = new ClientApi(ModelProvider.Claude);
     } else {
       api = new ClientApi(ModelProvider.GPT);
     }
@@ -673,7 +676,7 @@ export function JsonPreviewer(props: {
         date: m.date,
         model: m.model,
       })),
-    ]
+    ],
   };
   const mdText = "```json\n" + JSON.stringify(msgs, null, 2) + "\n```";
   const minifiedJson = JSON.stringify(msgs);

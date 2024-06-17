@@ -8,8 +8,8 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "BRClient",
-    "version": "1.2.0"
+    "productName": "OneAIChat",
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {

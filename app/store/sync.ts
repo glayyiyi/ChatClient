@@ -76,7 +76,7 @@ export const useSyncStore = createPersistStore(
         const remoteState = JSON.parse(rawContent) as AppState;
         const localState = getLocalAppState();
         mergeAppState(localState, remoteState);
-        localState[StoreKey.Chat].lastAction = "importSessions"
+        localState[StoreKey.Chat].lastAction = "importSessions";
         setLocalAppState(localState);
         setTimeout(() => {
           // 异步执行，否则APP里还未更新完就会刷新，导致导入不成功, browser不存在此问题
@@ -101,13 +101,23 @@ export const useSyncStore = createPersistStore(
       const client = this.getClient();
 
       try {
-        const remoteState = JSON.parse(
-          await client.get(config.username),
-        ) as AppState;
-        mergeAppState(localState, remoteState);
-        setLocalAppState(localState);
+        const remoteState = await client.get(config.username);
+        if (!remoteState || remoteState === "") {
+          await client.set(config.username, JSON.stringify(localState));
+          console.log(
+            "[Sync] Remote state is empty, using local state instead.",
+          );
+          return;
+        } else {
+          const parsedRemoteState = JSON.parse(
+            await client.get(config.username),
+          ) as AppState;
+          mergeAppState(localState, parsedRemoteState);
+          setLocalAppState(localState);
+        }
       } catch (e) {
         console.log("[Sync] failed to get remote state", e);
+        throw e;
       }
 
       await client.set(config.username, JSON.stringify(localState));
@@ -122,13 +132,22 @@ export const useSyncStore = createPersistStore(
   }),
   {
     name: StoreKey.Sync,
-    version: 1.1,
+    version: 1.2,
 
     migrate(persistedState, version) {
       const newState = persistedState as typeof DEFAULT_SYNC_STATE;
 
       if (version < 1.1) {
         newState.upstash.username = STORAGE_KEY;
+      }
+
+      if (version < 1.2) {
+        if (
+          (persistedState as typeof DEFAULT_SYNC_STATE).proxyUrl ===
+          "/api/cors/"
+        ) {
+          newState.proxyUrl = "";
+        }
       }
 
       return newState as any;

@@ -99,34 +99,29 @@ interface ChatProvider {
 export class ClientApi {
   public llm: LLMApi;
 
-  constructor(provider: ModelProvider = ModelProvider.Claude) {
+  constructor(provider: ModelProvider = ModelProvider.GPT) {
     const accessStore = useAccessStore.getState();
     console.log("provider is:" + provider);
-    if (provider == ModelProvider.AWS && accessStore.useBRProxy === "True") {
-      this.llm = new BRProxyApi();
-      return;
+    switch (provider) {
+      case ModelProvider.GeminiPro:
+        this.llm = new GeminiProApi();
+        break;
+      case ModelProvider.Claude:
+        // this.llm = new ClaudeApi();
+        if (accessStore.useBRProxy === "True") {
+          this.llm = new BRProxyApi();
+          break;
+        }
+      default:
+        this.llm = new ChatGPTApi();
     }
-    if (provider === ModelProvider.Claude) {
-      if (accessStore.useBRProxy === "True") {
-        this.llm = new BRProxyApi();
-        return;
-      }
-      this.llm = new ClaudeApi();
-      return;
-    }
-    // if (provider === ModelProvider.GeminiPro) {
-    //   this.llm = new GeminiProApi();
-    //   return;
-    // }
-    // this.llm = new ChatGPTApi();
-    this.llm = new ClaudeApi();
   }
 
-  config() { }
+  config() {}
 
-  prompts() { }
+  prompts() {}
 
-  masks() { }
+  masks() {}
 
   async share(messages: ChatMessage[], avatarUrl: string | null = null) {
     const msgs = messages
@@ -141,7 +136,6 @@ export class ClientApi {
             "Share from [BRClient]: A chatbot client forked from https://github.com/Yidadaa/ChatGPT-Next-Web",
         },
       ]);
-
 
     console.log("[Share]", messages, msgs);
     const clientConfig = getClientConfig();

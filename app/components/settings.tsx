@@ -51,6 +51,7 @@ import Locale, {
 import { copyToClipboard } from "../utils";
 import Link from "next/link";
 import {
+  Anthropic,
   Azure,
   Google,
   OPENAI_BASE_URL,
@@ -498,8 +499,9 @@ function SyncItems() {
           title={Locale.Settings.Sync.CloudState}
           subTitle={
             syncStore.lastProvider
-              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${syncStore.lastProvider
-              }]`
+              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${
+                  syncStore.lastProvider
+                }]`
               : Locale.Settings.Sync.NotSyncYet
           }
         >
@@ -694,7 +696,9 @@ export function Settings() {
             >
               <div
                 className={styles.avatar}
-                onClick={() => setShowEmojiPicker(true)}
+                onClick={() => {
+                  setShowEmojiPicker(!showEmojiPicker);
+                }}
               >
                 <Avatar avatar={config.avatar} />
               </div>
@@ -856,8 +860,8 @@ export function Settings() {
               onChange={(e) =>
                 updateConfig(
                   (config) =>
-                  (config.dontShowMaskSplashScreen =
-                    !e.currentTarget.checked),
+                    (config.dontShowMaskSplashScreen =
+                      !e.currentTarget.checked),
                 )
               }
             ></input>
@@ -977,161 +981,7 @@ export function Settings() {
                     </Select>
                   </ListItem> */}
 
-                  {accessStore.provider === "AWS" ? (
-                    <>
-                      {/* <ListItem
-                        title={Locale.Settings.Access.BRProxy.Title}
-                        subTitle={Locale.Settings.Access.BRProxy.SubTitle}
-                      >
-                        <Select
-                          value={accessStore.useBRProxy}
-                          onChange={(e) => {
-                            accessStore.update(
-                              (access) =>
-                                (access.useBRProxy = e.target
-                                  .value as UseBRProxy),
-                            );
-                          }}
-                        >
-                          {Object.entries(UseBRProxy).map(([k, v]) => (
-                            <option value={v} key={k}>
-                              {k}
-                            </option>
-                          ))}
-                        </Select>
-                      </ListItem> */}
-                      <ListItem
-                        title={Locale.Settings.Access.BRProxy.Title}
-                        subTitle={Locale.Settings.Access.BRProxy.SubTitle}
-                      >
-                        <a href="https://github.com/aws-samples/sample-connector-for-bedrock" target="_blank">
-                          <IconButton
-                            text="BRConnector"
-                            icon={<GithubIcon />}
-                            bordered
-                          /></a>
-                        <input
-                          type="checkbox"
-                          checked={accessStore.useBRProxy === "True"}
-                          onChange={(e) =>
-                            accessStore.update(
-                              (access) => {
-                                access.useBRProxy = e.currentTarget.checked ? "True" : "False";
-                              },
-                            )
-                          }
-                        ></input>
-                      </ListItem>
-                      {accessStore.useBRProxy === "False" ? (
-                        <>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.Region.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.Region.SubTitle
-                            }
-                          >
-                            <input
-                              type="text"
-                              value={accessStore.awsRegion}
-                              placeholder={
-                                Locale.Settings.Access.AWS.Region.Placeholder
-                              }
-                              onChange={(e) =>
-                                accessStore.update(
-                                  (access) =>
-                                    (access.awsRegion = e.currentTarget.value),
-                                )
-                              }
-                            ></input>
-                          </ListItem>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.AccessKey.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.AccessKey.SubTitle
-                            }
-                          >
-                            <PasswordInput
-                              value={accessStore.awsAccessKeyId}
-                              type="text"
-                              placeholder={
-                                Locale.Settings.Access.AWS.AccessKey.Placeholder
-                              }
-                              onChange={(e) => {
-                                accessStore.update(
-                                  (access) =>
-                                  (access.awsAccessKeyId =
-                                    e.currentTarget.value),
-                                );
-                              }}
-                            />
-                          </ListItem>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.SecretKey.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.SecretKey.SubTitle
-                            }
-                          >
-                            <PasswordInput
-                              value={accessStore.awsSecretAccessKey}
-                              type="text"
-                              placeholder={
-                                Locale.Settings.Access.AWS.SecretKey.Placeholder
-                              }
-                              onChange={(e) => {
-                                accessStore.update(
-                                  (access) =>
-                                  (access.awsSecretAccessKey =
-                                    e.currentTarget.value),
-                                );
-                              }}
-                            />
-                          </ListItem>
-                        </>
-                      ) : accessStore.useBRProxy === "True" ? (
-                        <>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.Endpoint.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.Endpoint.SubTitle
-                            }
-                          >
-                            <input
-                              type="text"
-                              value={accessStore.BRProxyUrl}
-                              placeholder={BRProxy.ExampleEndpoint}
-                              onChange={(e) =>
-                                accessStore.update(
-                                  (access) =>
-                                    (access.BRProxyUrl = e.currentTarget.value),
-                                )
-                              }
-                            ></input>
-                          </ListItem>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.ApiKey.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.ApiKey.SubTitle
-                            }
-                          >
-                            <PasswordInput
-                              value={accessStore.openaiApiKey}
-                              type="text"
-                              placeholder={
-                                Locale.Settings.Access.OpenAI.ApiKey.Placeholder
-                              }
-                              onChange={(e) => {
-                                accessStore.update(
-                                  (access) =>
-                                  (access.openaiApiKey =
-                                    e.currentTarget.value),
-                                );
-                              }}
-                            />
-                          </ListItem>
-                        </>
-                      ) : null}
-                    </>
-                  ) : accessStore.provider === "OpenAI" ? (
+                  {accessStore.provider === ServiceProvider.OpenAI && (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.OpenAI.Endpoint.Title}
@@ -1170,7 +1020,8 @@ export function Settings() {
                         />
                       </ListItem>
                     </>
-                  ) : accessStore.provider === "Azure" ? (
+                  )}
+                  {accessStore.provider === ServiceProvider.Azure && (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.Azure.Endpoint.Title}
@@ -1222,14 +1073,15 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                              (access.azureApiVersion =
-                                e.currentTarget.value),
+                                (access.azureApiVersion =
+                                  e.currentTarget.value),
                             )
                           }
                         ></input>
                       </ListItem>
                     </>
-                  ) : accessStore.provider === "Google" ? (
+                  )}
+                  {accessStore.provider === ServiceProvider.Google && (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.Google.Endpoint.Title}
@@ -1281,14 +1133,77 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                              (access.googleApiVersion =
-                                e.currentTarget.value),
+                                (access.googleApiVersion =
+                                  e.currentTarget.value),
                             )
                           }
                         ></input>
                       </ListItem>
                     </>
-                  ) : null}
+                  )}
+                  {accessStore.provider === ServiceProvider.AWS && (
+                    <>
+                      <ListItem
+                        title={Locale.Settings.Access.Anthropic.Endpoint.Title}
+                        subTitle={
+                          Locale.Settings.Access.Anthropic.Endpoint.SubTitle +
+                          Anthropic.ExampleEndpoint
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.anthropicUrl}
+                          placeholder={Anthropic.ExampleEndpoint}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.anthropicUrl = e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Anthropic.ApiKey.Title}
+                        subTitle={
+                          Locale.Settings.Access.Anthropic.ApiKey.SubTitle
+                        }
+                      >
+                        <PasswordInput
+                          value={accessStore.anthropicApiKey}
+                          type="text"
+                          placeholder={
+                            Locale.Settings.Access.Anthropic.ApiKey.Placeholder
+                          }
+                          onChange={(e) => {
+                            accessStore.update(
+                              (access) =>
+                                (access.anthropicApiKey =
+                                  e.currentTarget.value),
+                            );
+                          }}
+                        />
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Anthropic.ApiVerion.Title}
+                        subTitle={
+                          Locale.Settings.Access.Anthropic.ApiVerion.SubTitle
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.anthropicApiVersion}
+                          placeholder={Anthropic.Vision}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.anthropicApiVersion =
+                                  e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                    </>
+                  )}
                 </>
               )}
             </>
@@ -1302,9 +1217,9 @@ export function Settings() {
                   ? loadingUsage
                     ? Locale.Settings.Usage.IsChecking
                     : Locale.Settings.Usage.SubTitle(
-                      usage?.used ?? "[?]",
-                      usage?.subscription ?? "[?]",
-                    )
+                        usage?.used ?? "[?]",
+                        usage?.subscription ?? "[?]",
+                      )
                   : Locale.Settings.Usage.NoAccess
               }
             >
@@ -1354,6 +1269,6 @@ export function Settings() {
 
         <DangerItems />
       </div>
-    </ErrorBoundary >
+    </ErrorBoundary>
   );
 }
