@@ -73,7 +73,7 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/web.zip
+    # - assets/web.zip
     - assets/web/
     - assets/web/assets/
     - assets/web/_next/

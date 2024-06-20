@@ -9,7 +9,7 @@
     "export": "cross-env BUILD_MODE=export BUILD_APP=1 next build",
     "export:dev": "cross-env BUILD_MODE=export BUILD_APP=1 next dev",
     "app:dev": "yarn tauri dev",
-    "app:build": "export TAURI_PRIVATE_KEY='dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5S0lCdGFEN2ZSS3dMUkYwSkRySXN4aFliTW0ybEZsc3QxVU1DVEFoMnZlUUFBQkFBQUFBQUFBQUFBQUlBQUFBQXpaWTMvU3BqTldjdFJQVVpUS2QzTlRBTGo2cW1URUpNb24vY3dIaXVWVWZ2WWFqMVZXK29Za05RM0loa1NZYWR1bGhaSlA2bytrditQYjMxaUtTMm5FRDNCMW9DeW9NNW1lZHg2S1YrbHk1ZjE2TTVnSUROclhXaEs0Umk4U1BST20yYmh1aWwwNUk9Cg==' && export TAURI_KEY_PASSW='' && yarn tauri build && cd flutter_app  && flutter build apk --release",
+    "app:build": "export TAURI_PRIVATE_KEY='dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5S0lCdGFEN2ZSS3dMUkYwSkRySXN4aFliTW0ybEZsc3QxVU1DVEFoMnZlUUFBQkFBQUFBQUFBQUFBQUlBQUFBQXpaWTMvU3BqTldjdFJQVVpUS2QzTlRBTGo2cW1URUpNb24vY3dIaXVWVWZ2WWFqMVZXK29Za05RM0loa1NZYWR1bGhaSlA2bytrditQYjMxaUtTMm5FRDNCMW9DeW9NNW1lZHg2S1YrbHk1ZjE2TTVnSUROclhXaEs0Umk4U1BST20yYmh1aWwwNUk9Cg==' && yarn tauri build && cd flutter_app  && flutter build apk --release",
     "lint": "next lint",
     "prompts": "node ./scripts/fetch-prompts.mjs",
     "prepare": "husky install",
