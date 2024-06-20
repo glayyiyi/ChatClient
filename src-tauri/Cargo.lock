@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "OneAIChat"
+version = "1.2.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-window-state",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -295,17 +306,6 @@ dependencies = [
  "futures-lite",
  "piper",
  "tracing",
-]
-
-[[package]]
-name = "brclient"
-version = "1.2.0"
-dependencies = [
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-window-state",
 ]
 
 [[package]]

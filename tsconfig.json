@@ -34,10 +34,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/calcTextareaHeight.ts",
-    "./out/types/**/*.ts",
-    "./electron-app/out/types/**/*.ts",
-    "out/types/**/*.ts"
+    "app/calcTextareaHeight.ts"
   ],
   "exclude": [
     "node_modules"

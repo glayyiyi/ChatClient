@@ -10,8 +10,8 @@ import { GoogleTagManager } from "@next/third-parties/google";
 const serverConfig = getServerSideConfig();
 
 export const metadata: Metadata = {
-  title: "Bedrock Client",
-  description: "Your personal AWS BedRock Chat Bot.",
+  title: "OneAI Chat",
+  description: "Your personal OneAI Chat.",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     { media: "(prefers-color-scheme: dark)", color: "#151515" },
   ],
   appleWebApp: {
-    title: "Bedrock Client",
+    title: "OneAI Chat",
     statusBarStyle: "default",
   },
 };

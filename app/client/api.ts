@@ -133,7 +133,7 @@ export class ClientApi {
         {
           from: "human",
           value:
-            "Share from [BRClient]: A chatbot client forked from https://github.com/Yidadaa/ChatGPT-Next-Web",
+            "Share from [OneAIChat]: A chatbot client forked from https://github.com/Yidadaa/ChatGPT-Next-Web",
         },
       ]);
 

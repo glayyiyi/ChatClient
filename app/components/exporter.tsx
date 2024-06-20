@@ -541,9 +541,9 @@ export function ImagePreviewer(props: {
           </div>
 
           <div>
-            <div className={styles["main-title"]}>BRClient</div>
+            <div className={styles["main-title"]}>OneAIChat</div>
             <div className={styles["sub-title"]}>
-              github.com/DamonDeng/BRClient
+              github.com/glayyiyi/OneAIChat
             </div>
             <div className={styles["icons"]}>
               <ExportAvatar avatar={config.avatar} />

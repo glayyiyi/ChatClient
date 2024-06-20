@@ -186,7 +186,7 @@ const createIDBStorage = () => {
     global.indexedDB = fakeIndexedDB;
   }
   const idbChatSessionStore = idb_createStore(
-    "brclient-chat-store",
+    "OneAIChat-chat-store",
     "sessions-store",
   );
   const idbChatStorage: StateStorage = {

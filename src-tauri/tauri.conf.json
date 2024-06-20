@@ -4,7 +4,7 @@
     "beforeBuildCommand": "yarn export",
     "beforeDevCommand": "yarn export:dev",
     "devPath": "http://localhost:3000",
-    "distDir": "../out",
+    "distDir": "../flutter_app/assets/web",
     "withGlobalTauri": true
   },
   "package": {
@@ -68,7 +68,7 @@
         "icons/icon.ico"
       ],
       "identifier": "com.damonai.brclient",
-      "longDescription": "BRClient is a cross-platform Bedrock client, including Web/Win/Linux/OSX/PWA.",
+      "longDescription": "OneAI Chat is a cross-platform AI Chat, including App/Web/Win/Linux/OSX/PWA.",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",

@@ -2,7 +2,7 @@ const { app, BrowserWindow, dialog, clipboard, shell, session, nativeTheme } = r
 const path = require('path');
 const fs = require('fs');
 const appRoot = app.getAppPath();
-const appPath = path.join(appRoot, 'out');
+const appPath = path.join(appRoot, 'flutter_app/assets/web');
 
 console.log('===========NODE_ENV:==================', process.env.NODE_ENV);
 

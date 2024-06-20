@@ -14,7 +14,7 @@ import DownloadIcon from "../icons/download.svg";
 import UploadIcon from "../icons/upload.svg";
 import ConfigIcon from "../icons/config.svg";
 import ConfirmIcon from "../icons/confirm.svg";
-import GithubIcon from "../icons/github.svg";
+
 import ConnectionIcon from "../icons/connection.svg";
 import CloudSuccessIcon from "../icons/cloud-success.svg";
 import CloudFailIcon from "../icons/cloud-fail.svg";
@@ -59,8 +59,6 @@ import {
   RELEASE_URL,
   STORAGE_KEY,
   ServiceProvider,
-  UseBRProxy,
-  BRProxy,
   SlotID,
   UPDATE_URL,
 } from "../constant";
@@ -629,7 +627,7 @@ export function Settings() {
   const showUsage = accessStore.isAuthorized();
   useEffect(() => {
     // checks per minutes
-    // checkUpdate();
+    checkUpdate();
     showUsage && checkUsage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -705,7 +703,7 @@ export function Settings() {
             </Popover>
           </ListItem>
 
-          {/* <ListItem
+          <ListItem
             title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
             subTitle={
               checkingUpdate
@@ -728,7 +726,7 @@ export function Settings() {
                 onClick={() => checkUpdate(true)}
               />
             )}
-          </ListItem> */}
+          </ListItem>
 
           <ListItem title={Locale.Settings.SendKey}>
             <Select
@@ -826,21 +824,6 @@ export function Settings() {
                 updateConfig(
                   (config) =>
                     (config.sendPreviewBubble = e.currentTarget.checked),
-                )
-              }
-            ></input>
-          </ListItem>
-
-          <ListItem
-            title={Locale.Settings.Metrics.Title}
-            subTitle={Locale.Settings.Metrics.SubTitle}
-          >
-            <input
-              type="checkbox"
-              checked={config.metrics}
-              onChange={(e) =>
-                updateConfig(
-                  (config) => (config.metrics = e.currentTarget.checked),
                 )
               }
             ></input>
@@ -944,7 +927,7 @@ export function Settings() {
                     title={Locale.Settings.Access.CustomEndpoint.Title}
                     subTitle={Locale.Settings.Access.CustomEndpoint.SubTitle}
                   >
-                    {/* <input
+                    <input
                       type="checkbox"
                       checked={accessStore.useCustomConfig}
                       onChange={(e) =>
@@ -953,13 +936,13 @@ export function Settings() {
                             (access.useCustomConfig = e.currentTarget.checked),
                         )
                       }
-                    ></input> */}
+                    ></input>
                   </ListItem>
                 )
               }
               {accessStore.useCustomConfig && (
                 <>
-                  {/* <ListItem
+                  <ListItem
                     title={Locale.Settings.Access.Provider.Title}
                     subTitle={Locale.Settings.Access.Provider.SubTitle}
                   >
@@ -968,8 +951,8 @@ export function Settings() {
                       onChange={(e) => {
                         accessStore.update(
                           (access) =>
-                          (access.provider = e.target
-                            .value as ServiceProvider),
+                            (access.provider = e.target
+                              .value as ServiceProvider),
                         );
                       }}
                     >
@@ -979,7 +962,7 @@ export function Settings() {
                         </option>
                       ))}
                     </Select>
-                  </ListItem> */}
+                  </ListItem>
 
                   {accessStore.provider === ServiceProvider.OpenAI && (
                     <>

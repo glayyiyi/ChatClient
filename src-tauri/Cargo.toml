@@ -1,11 +1,11 @@
 [package]
-name = "brclient"
+name = "OneAIChat"
 version = "1.2.0"
 description = "A cross platform app for Bedrock ChatBot."
-authors = ["BRClient Dev Team"]
+authors = ["OneAIChat Dev Team"]
 license = "mit"
 repository = ""
-default-run = "brclient"
+default-run = "OneAIChat"
 edition = "2021"
 rust-version = "1.60"
 

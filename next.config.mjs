@@ -29,7 +29,7 @@ const nextConfig = {
     return config;
   },
   output: mode,
-  distDir: 'out',
+  distDir: 'flutter_app/assets/web',
   assetPrefix: './', 
   images: {
     unoptimized: mode === "export",
