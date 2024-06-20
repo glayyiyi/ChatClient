@@ -34,7 +34,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/calcTextareaHeight.ts"
+    "app/calcTextareaHeight.ts",
+    "flutter_app/assets/web/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
