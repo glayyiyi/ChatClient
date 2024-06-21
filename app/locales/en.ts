@@ -5,7 +5,6 @@ import { LocaleType } from "./index";
 // if you are adding a new translation, please use PartialLocaleType instead of LocaleType
 
 const isApp = !!getClientConfig()?.isApp;
-console.log(isApp);
 const en: LocaleType = {
   WIP: "Coming Soon...",
   Error: {
@@ -15,7 +14,7 @@ const en: LocaleType = {
   },
   Auth: {
     Title: "Need Access Code",
-    Tips: "Please enter  configuration below",
+    Tips: "Please enter access code below",
     SubTips: "Or enter your AWS Bedrock,OpenAI or Google API Key",
     Input: "access code",
     Confirm: "Confirm",
@@ -67,6 +66,7 @@ const en: LocaleType = {
       Clear: "Clear Context",
       Settings: "Settings",
       UploadImage: "Upload Images",
+      ImportSession: "Import Session",
     },
     Rename: "Rename Chat",
     Typing: "Typing…",

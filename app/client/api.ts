@@ -108,7 +108,7 @@ export class ClientApi {
         this.llm = new GeminiProApi();
         break;
       case ModelProvider.Claude:
-        this.llm = new ClaudeApiA();
+        this.llm = new ClaudeApi();
         break;
       case ModelProvider.AWS:
         if (accessStore.useBRProxy === "True") {

@@ -209,6 +209,7 @@ export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
     available: true,
+    displayName: "GPT",
     provider: {
       id: "openai",
       providerName: "OpenAI",
@@ -218,6 +219,7 @@ export const DEFAULT_MODELS = [
   ...googleModels.map((name) => ({
     name,
     available: true,
+    displayName: "Gemini",
     provider: {
       id: "google",
       providerName: "Google",
@@ -227,6 +229,7 @@ export const DEFAULT_MODELS = [
   ...anthropicModels.map((name) => ({
     name,
     available: true,
+    displayName: "Anthropic",
     provider: {
       id: "anthropic",
       providerName: "Anthropic",

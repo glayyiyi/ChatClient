@@ -1,4 +1,3 @@
-"use client";
 import { useDebouncedCallback } from "use-debounce";
 import React, {
   useState,
@@ -10,9 +9,7 @@ import React, {
   RefObject,
 } from "react";
 
-import {
-  readFromFile,
-} from "../utils";
+import { readFromFile } from "../utils";
 
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -66,10 +63,11 @@ import {
   getMessageTextContent,
   getMessageImages,
   isVisionModel,
-  compressImage,
   extractTextFromDocx,
   extractTextFromXlsx,
 } from "../utils";
+
+import { compressImage } from "@/app/utils/chat";
 
 import dynamic from "next/dynamic";
 
@@ -230,6 +228,8 @@ function useSubmitHandler() {
   }, []);
 
   const shouldSubmit = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Fix Chinese input method "Enter" on Safari
+    if (e.keyCode == 229) return false;
     if (e.key !== "Enter") return false;
     if (e.key === "Enter" && (e.nativeEvent.isComposing || isComposing.current))
       return false;
@@ -580,15 +580,25 @@ export function ChatActions(props: {
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
   const allModels = useAllModels();
-  const models = useMemo(
-    () => allModels.filter((m) => m.available),
-    [allModels],
-  );
+  const models = useMemo(() => {
+    const filteredModels = allModels.filter((m) => m.available);
+    const defaultModel = filteredModels.find((m) => m.isDefault);
+
+    if (defaultModel) {
+      const arr = [
+        defaultModel,
+        ...filteredModels.filter((m) => m !== defaultModel),
+      ];
+      return arr;
+    } else {
+      return filteredModels;
+    }
+  }, [allModels]);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showUploadImage, setShowUploadImage] = useState(false);
 
   useEffect(() => {
-    const show = isVisionModel(currentModel, allModels);
+    const show = isVisionModel(currentModel);
     setShowUploadImage(show);
     if (!show) {
       props.setAttachImages([]);
@@ -599,7 +609,10 @@ export function ChatActions(props: {
     // switch to first available model
     const isUnavaliableModel = !models.some((m) => m.name === currentModel);
     if (isUnavaliableModel && models.length > 0) {
-      const nextModel = models[0].name as ModelType;
+      // show next model to default model if exist
+      let nextModel: ModelType = (
+        models.find((model) => model.isDefault) || models[0]
+      ).name;
       chatStore.updateCurrentSession(
         (session) => (session.mask.modelConfig.model = nextModel),
       );
@@ -675,7 +688,7 @@ export function ChatActions(props: {
               const session = JSON.parse(content);
               chatStore.importSession(session);
               navigate(Path.Chat);
-            } catch { }
+            } catch {}
           });
         }}
         text={Locale.Chat.InputActions.ImportSession}
@@ -820,9 +833,9 @@ function _Chat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrolledToBottom = scrollRef?.current
     ? Math.abs(
-      scrollRef.current.scrollHeight -
-      (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
-    ) <= 1
+        scrollRef.current.scrollHeight -
+          (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
+      ) <= 1
     : false;
   const { setAutoScroll, scrollDomToBottom } = useScrollToBottom(
     scrollRef,
@@ -1109,27 +1122,27 @@ function _Chat() {
       .concat(
         isLoading
           ? [
-            {
-              ...createMessage({
-                role: "assistant",
-                content: "……",
-              }),
-              preview: true,
-            },
-          ]
+              {
+                ...createMessage({
+                  role: "assistant",
+                  content: "……",
+                }),
+                preview: true,
+              },
+            ]
           : [],
       )
       .concat(
         userInput.length > 0 && config.sendPreviewBubble
           ? [
-            {
-              ...createMessage({
-                role: "user",
-                content: userInput,
-              }),
-              preview: true,
-            },
-          ]
+              {
+                ...createMessage({
+                  role: "user",
+                  content: userInput,
+                }),
+                preview: true,
+              },
+            ]
           : [],
       );
   }, [
@@ -1224,7 +1237,7 @@ function _Chat() {
         if (payload.key || payload.url) {
           showConfirm(
             Locale.URLCommand.Settings +
-            `\n${JSON.stringify(payload, null, 4)}`,
+              `\n${JSON.stringify(payload, null, 4)}`,
           ).then((res) => {
             if (!res) return;
             if (payload.key) {
@@ -1235,6 +1248,7 @@ function _Chat() {
             if (payload.url) {
               accessStore.update((access) => (access.openaiUrl = payload.url!));
             }
+            accessStore.update((access) => (access.useCustomConfig = true));
           });
         }
       } catch {
@@ -1263,13 +1277,12 @@ function _Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   const allModels = useAllModels();
 
   const handlePaste = useCallback(
     async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const currentModel = chatStore.currentSession().mask.modelConfig.model;
-      if (!isVisionModel(currentModel, allModels)) {
+      if (!isVisionModel(currentModel)) {
         return;
       }
       const items = (event.clipboardData || window.clipboardData).items;
@@ -1667,10 +1680,11 @@ function _Chat() {
           }}
         />
         <label
-          className={`${styles["chat-input-panel-inner"]} ${attachImages.length != 0
-            ? styles["chat-input-panel-inner-attach"]
-            : ""
-            }`}
+          className={`${styles["chat-input-panel-inner"]} ${
+            attachImages.length != 0
+              ? styles["chat-input-panel-inner-attach"]
+              : ""
+          }`}
           htmlFor="chat-input"
         >
           <textarea
