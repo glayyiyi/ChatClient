@@ -1124,7 +1124,7 @@ export function Settings() {
                       </ListItem>
                     </>
                   )}
-                  {accessStore.provider === ServiceProvider.AWS && (
+                  {accessStore.provider === ServiceProvider.Anthropic && (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.Anthropic.Endpoint.Title}

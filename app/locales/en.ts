@@ -11,13 +11,13 @@ const en: LocaleType = {
   Error: {
     Unauthorized: isApp
       ? "Invalid API Key, please check it in [Settings](/#/settings) page."
-      : "Unauthorized access, please enter confgure your AWS credentials in [auth](/#/auth) page",
+      : "Unauthorized access, please enter access code in [auth](/#/auth) page, or enter your OpenAI API Key.",
   },
   Auth: {
-    Title: "Need AWS credentials",
-    Tips: "Please enter AWS region, acess key and secret key below",
-    SubTips: "Or enter your BRConnector API Key",
-    Input: "access key",
+    Title: "Need Access Code",
+    Tips: "Please enter  configuration below",
+    SubTips: "Or enter your AWS Bedrock,OpenAI or Google API Key",
+    Input: "access code",
     Confirm: "Confirm",
     Later: "Later",
   },
@@ -67,7 +67,6 @@ const en: LocaleType = {
       Clear: "Clear Context",
       Settings: "Settings",
       UploadImage: "Upload Images",
-      ImportSession: "Import Session(JSON format)",
     },
     Rename: "Rename Chat",
     Typing: "Typing…",
@@ -287,8 +286,8 @@ const en: LocaleType = {
         Placeholder: "Enter Code",
       },
       CustomEndpoint: {
-        Title: "AWS Setting",
-        SubTitle: "Configure the parameters for Amazon Web Services.",
+        Title: "Custom Endpoint",
+        SubTitle: "Use custom AWS Bedrock,Azure or OpenAI service",
       },
       BRProxy: {
         Title: "Enable BRConnector",

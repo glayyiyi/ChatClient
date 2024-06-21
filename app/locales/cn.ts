@@ -8,13 +8,13 @@ const cn = {
   Error: {
     Unauthorized: isApp
       ? "检测到无效 API Key，请前往[设置](/#/settings)页检查 API Key 是否配置正确。"
-      : "认证信息不正确或为空，请前往[登录](/#/auth)页输入正确的AWS认证信息",
+      : "访问密码不正确或为空，请前往[登录](/#/auth)页输入正确的访问密码，或者在[设置](/#/settings)页填入你自己的 OpenAI API Key。",
   },
   Auth: {
-    Title: "需要AWS认证信息",
-    Tips: "Please enter AWS region, acess key and secret key below",
-    SubTips: "或者输入你的BRConnector API 密钥",
-    Input: "access key",
+    Title: "需要密码",
+    Tips: "管理员开启了密码验证，请在下方填入访问码",
+    SubTips: "或者输入你的 AWS Bedrock,OpenAI 或 Google API 密钥",
+    Input: "在此处填写访问码",
     Confirm: "确认",
     Later: "稍后再说",
   },
@@ -282,8 +282,8 @@ const cn = {
         Placeholder: "请输入访问密码",
       },
       CustomEndpoint: {
-        Title: "亚马逊云服务设置",
-        SubTitle: "配置亚马逊云服务的相关参数",
+        Title: "自定义接口",
+        SubTitle: "是否使用自定义 AWS Bedrock,Azure 或 OpenAI 服务",
       },
       BRProxy: {
         Title: "启用 BRConnector",
@@ -423,8 +423,7 @@ const cn = {
     Prompt: {
       History: (content: string) => "这是历史聊天总结作为前情提要：" + content,
       Topic:
-        "Use 2 to 8 Chinese characters to summarize the brief topic of the conversation, do not explain, do not use punctuation, do not use mood words, do not add extra text, do not bold, if there is no topic, please directly return “闲聊”",
-      // "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”",
+        "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”",
       Summarize:
         "简要总结一下对话内容，用作后续的上下文提示 prompt，控制在 200 字以内",
     },

@@ -71,18 +71,19 @@ export enum UseBRProxy {
 }
 
 export enum ServiceProvider {
+  AWS = "AWS",
   OpenAI = "OpenAI",
   Azure = "Azure",
   Google = "Google",
-  AWS = "AWS",
+  Anthropic = "Anthropic",
 }
 
 export enum ModelProvider {
+  AWS = "AWS",
   GPT = "GPT",
   GeminiPro = "GeminiPro",
-  // Anthropic = "Anthropic",
+  Anthropic = "Anthropic",
   Claude = "Claude",
-  AWS = "AWS",
 }
 
 export const Anthropic = {
@@ -205,6 +206,33 @@ export const DEFAULT_MODELS = [
       providerType: "aws",
     },
   },
+  ...openaiModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+    },
+  })),
+  ...googleModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "google",
+      providerName: "Google",
+      providerType: "google",
+    },
+  })),
+  ...anthropicModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "anthropic",
+      providerName: "Anthropic",
+      providerType: "anthropic",
+    },
+  })),
 ] as const;
 
 export const CHAT_PAGE_SIZE = 15;
