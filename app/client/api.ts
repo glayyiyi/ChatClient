@@ -8,7 +8,7 @@ import {
 import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
-import { ClaudeApiA } from "./platforms/anthropic";
+// import { ClaudeApi } from "./platforms/anthropic";
 import { ClaudeApi } from "./platforms/aws";
 import { BRProxyApi } from "./platforms/brproxy";
 export const ROLES = ["system", "user", "assistant"] as const;
@@ -44,7 +44,6 @@ export interface ChatOptions {
   config: LLMConfig;
 
   onUpdate?: (message: string, chunk: string) => void;
-  // onFinish: (message: string) => void;
   onFinish: (message: string, metrics?: object) => void;
   onError?: (err: Error) => void;
   onController?: (controller: AbortController) => void;
@@ -101,7 +100,7 @@ interface ChatProvider {
 export class ClientApi {
   public llm: LLMApi;
 
-  constructor(provider: ModelProvider = ModelProvider.GPT) {
+  constructor(provider: ModelProvider = ModelProvider.AWS) {
     const accessStore = useAccessStore.getState();
     console.log("provider is:" + provider);
     switch (provider) {
@@ -109,13 +108,17 @@ export class ClientApi {
         this.llm = new GeminiProApi();
         break;
       case ModelProvider.Claude:
-        this.llm = new ClaudeApi();
+        this.llm = new ClaudeApiA();
+        break;
+      case ModelProvider.AWS:
         if (accessStore.useBRProxy === "True") {
           this.llm = new BRProxyApi();
-          break;
+          return;
         }
+        this.llm = new ClaudeApi();
+        break;
       default:
-        this.llm = new ChatGPTApi();
+        this.llm = new ClaudeApi();
     }
   }
 
@@ -135,11 +138,9 @@ export class ClientApi {
         {
           from: "human",
           value:
-            "Share from [OneAI Chat]: https://github.com/glayyiyi/OneAIChat",
+            "Share from [BRClient]: A chatbot client forked from https://github.com/Yidadaa/ChatGPT-Next-Web",
         },
       ]);
-    // 敬告二开开发者们，为了开源大模型的发展，请不要修改上述消息，此消息用于后续数据清洗使用
-    // Please do not modify this message
 
     console.log("[Share]", messages, msgs);
     const clientConfig = getClientConfig();

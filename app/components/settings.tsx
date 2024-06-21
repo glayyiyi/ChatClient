@@ -1115,27 +1115,6 @@ export function Settings() {
                               }
                             ></input>
                           </ListItem>
-                          <ListItem
-                            title={Locale.Settings.Access.AWS.ApiKey.Title}
-                            subTitle={
-                              Locale.Settings.Access.AWS.ApiKey.SubTitle
-                            }
-                          >
-                            <PasswordInput
-                              value={accessStore.openaiApiKey}
-                              type="text"
-                              placeholder={
-                                Locale.Settings.Access.OpenAI.ApiKey.Placeholder
-                              }
-                              onChange={(e) => {
-                                accessStore.update(
-                                  (access) =>
-                                    (access.openaiApiKey =
-                                      e.currentTarget.value),
-                                );
-                              }}
-                            />
-                          </ListItem>
                         </>
                       ) : null}
                     </>
@@ -1300,7 +1279,7 @@ export function Settings() {
                       </ListItem>
                     </>
                   )}
-                  {accessStore.provider === ServiceProvider.Anthropic && (
+                  {/* {accessStore.provider === ServiceProvider.Anthropic && (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.Anthropic.Endpoint.Title}
@@ -1362,7 +1341,7 @@ export function Settings() {
                         ></input>
                       </ListItem>
                     </>
-                  )}
+                  )} */}
                 </>
               )}
             </>
